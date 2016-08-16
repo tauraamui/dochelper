@@ -51,9 +51,10 @@ class Dochelper {
 
         fun findAndReplaceKeysInFile(file: File?, keysAndValues: HashMap<String, String?>): HWPFDocument? {
             var documentToReplaceTextWithin: HWPFDocument? = null
+            var fileInputStream: FileInputStream? = null
             if (file?.name!!.contains('.') && file?.name!!.split('.')[1].equals("doc")) {
                 try {
-                    val fileInputStream = FileInputStream(file)
+                    fileInputStream = FileInputStream(file)
                     documentToReplaceTextWithin = HWPFDocument(fileInputStream)
                     val range = documentToReplaceTextWithin.range
                     for (i in 0..range.numParagraphs()-1) {
@@ -61,11 +62,14 @@ class Dochelper {
                         for (j in 0..paragraph.numCharacterRuns()-1) {
                             val run = paragraph.getCharacterRun(j)
                             for ((key, value) in keysAndValues) {
+                                if (key.equals("{appointment_date_time}")) {
+                                    println(paragraph.text().contains(key))
+                                }
                                 run.replaceText(key, value)
-                                println(key + " " + value)
                             }
                         }
                     }
+                    fileInputStream?.close()
                 } catch (e: OfficeXmlFileException) {
                     println("Document ${file?.name} is a newer .docx format...")
                 } catch (e: NotOLE2FileException) {
