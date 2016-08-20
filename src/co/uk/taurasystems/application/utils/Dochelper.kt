@@ -62,9 +62,6 @@ class Dochelper {
                         for (j in 0..paragraph.numCharacterRuns()-1) {
                             val run = paragraph.getCharacterRun(j)
                             for ((key, value) in keysAndValues) {
-                                if (key.equals("{appointment_date_time}")) {
-                                    println(paragraph.text().contains(key))
-                                }
                                 run.replaceText(key, value)
                             }
                         }
