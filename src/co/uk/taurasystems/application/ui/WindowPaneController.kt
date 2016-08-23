@@ -6,6 +6,7 @@ import javafx.scene.control.Button
 import javafx.scene.control.DatePicker
 import javafx.scene.control.TextField
 import org.apache.poi.hwpf.HWPFDocument
+import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -65,7 +66,6 @@ class WindowPaneController {
     private fun setupDataMap() {
         keysAndValues.put("{ref}", refTextField?.text!!)
         keysAndValues.put("{date}", getDatePickerValue(letterDatePicker))
-        //keysAndValues.put("{date}", if (letterDatePicker?.value == null) "" else letterDatePicker?.value.toString())
         keysAndValues.put("{title}", titleTextField?.text!!)
         keysAndValues.put("{patient_full_name}", patientFullNameTextField?.text!!)
         keysAndValues.put("{address_line_1}", addressLine1TextField?.text!!)
@@ -96,11 +96,13 @@ class WindowPaneController {
     }
 
     private fun createOutput() {
+        //TODO: Need to change the way that it outputs files to handle version suffixes and using the correct extension
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
             val editedDoc = Dochelper.findAndReplaceKeysInDoc(file, keysAndValues)
             if (fileTypeName.equals("unknown")) continue
             val outputStream = FileOutputStream("$oxhDocsOutputFolder\\${patientFullNameTextField?.text} $fileTypeName.doc")
-            editedDoc?.write(outputStream)
+            if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
+            if (editedDoc is XWPFDocument) continue
             outputStream.close()
         }
     }
@@ -117,5 +119,15 @@ class WindowPaneController {
             }
         }
         return stringBuilder.toString()
+    }
+
+    private fun saveUniqueCopy(file: File) {
+        var fileToSave = file
+        var versionSuffix = 1
+        while (fileToSave.exists()) {
+            fileToSave = File("${file.name}$versionSuffix")
+            versionSuffix++
+        }
+        fileToSave.createNewFile()
     }
 }
