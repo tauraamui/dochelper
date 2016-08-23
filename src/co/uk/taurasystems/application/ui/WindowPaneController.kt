@@ -36,7 +36,7 @@ class WindowPaneController {
     private val keysAndValues = HashMap<String, String?>()
 
     private val oxhDocsFolder = File("oxh_docs")
-    private val oxhDocsOutputFolder = File("oxh_docs\\output")
+    private val oxhDocsOutputFolder = File("oxh_docs/output")
                                                 //0     1     2     3     4     5     6     7     8     9
     private var daysAndSuffixes = listOf<String>("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th",
                                                         //10    11    12    13    14    15    16    17    18    19
@@ -47,6 +47,7 @@ class WindowPaneController {
                                                          "th", "st")
 
     fun initialize() {
+        setupFileMap()
         okButton?.setOnAction {e ->
             setupFileMap()
             setupDataMap()
@@ -77,11 +78,6 @@ class WindowPaneController {
         getDatePickerValue(datePicker = letterDatePicker)
         getDatePickerValue(datePicker = appointmentDatePicker)
         keysAndValues.put("{appointment_date_time}", "${getDatePickerValue(appointmentDatePicker)} ${appointmentTimeTextField?.text}")
-        //keysAndValues.put("{appointment_date_time}", (if (appointmentDatePicker?.value == null) "" else appointmentDatePicker?.value.toString()) + " " + (appointmentTimeTextField?.text!!))
-
-        for ((key, value) in keysAndValues) {
-            println(key + " " + value)
-        }
     }
 
     private fun getDatePickerValue(datePicker: DatePicker?): String {
@@ -101,7 +97,7 @@ class WindowPaneController {
 
     private fun createOutput() {
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
-            val editedDoc = Dochelper.findAndReplaceKeysInFile(file, keysAndValues)
+            val editedDoc = Dochelper.findAndReplaceKeysInDoc(file, keysAndValues)
             if (fileTypeName.equals("unknown")) continue
             val outputStream = FileOutputStream("$oxhDocsOutputFolder\\${patientFullNameTextField?.text} $fileTypeName.doc")
             editedDoc?.write(outputStream)
@@ -110,7 +106,7 @@ class WindowPaneController {
     }
 
     private fun camelCase(stringToReformat: String): String {
-        var stringLowerCase = stringToReformat.toLowerCase()
+        val stringLowerCase = stringToReformat.toLowerCase()
         val stringBuilder = StringBuilder()
         stringBuilder.setLength(stringLowerCase.length)
         stringLowerCase.forEachIndexed { i, c ->

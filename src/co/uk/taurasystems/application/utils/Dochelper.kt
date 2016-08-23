@@ -45,11 +45,14 @@ class Dochelper {
                 } catch (e: NotOLE2FileException) {
                     println("Document ${file?.name} has an invalid header signature")
                 }
+            } else if (file?.name!!.contains(".") && file?.name!!.split(".")[1].equals("docx")) {
+
             }
             return "unknown"
         }
 
-        fun findAndReplaceKeysInFile(file: File?, keysAndValues: HashMap<String, String?>): HWPFDocument? {
+
+        fun findAndReplaceKeysInDoc(file: File?, keysAndValues: HashMap<String, String?>): HWPFDocument? {
             var documentToReplaceTextWithin: HWPFDocument? = null
             var fileInputStream: FileInputStream? = null
             if (file?.name!!.contains('.') && file?.name!!.split('.')[1].equals("doc")) {
@@ -66,7 +69,7 @@ class Dochelper {
                             }
                         }
                     }
-                    fileInputStream?.close()
+                    fileInputStream.close()
                 } catch (e: OfficeXmlFileException) {
                     println("Document ${file?.name} is a newer .docx format...")
                 } catch (e: NotOLE2FileException) {
