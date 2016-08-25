@@ -96,7 +96,6 @@ class WindowPaneController {
     }
 
     private fun createOutput() {
-
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
             val editedDoc = Dochelper.findAndReplaceKeysInDoc(file, keysAndValues)
             if (fileTypeName == "unknown") continue
@@ -123,14 +122,11 @@ class WindowPaneController {
     }
 
     private fun getUniqueFileName(file: File, extension: String): String {
-
-        var fileToSave = file
-        var versionSuffix = 1
-
+        var versionSuffix = 2
         val firstFile = File(file.absolutePath + "." + extension)
         if (!firstFile.exists()) return firstFile.absolutePath
 
-        fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
+        var fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
 
         while (fileToSave.exists()) {
             fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
