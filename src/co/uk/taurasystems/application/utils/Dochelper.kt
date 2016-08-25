@@ -24,9 +24,6 @@ class Dochelper {
                     if (file.isDirectory) continue
                     filePathAndDocType.put(identifyFile(file), file)
                 }
-                for ((key, value) in filePathAndDocType) {
-                    println("$key $value")
-                }
             } catch (e: KotlinNullPointerException) {
                 println("oxh_docs folder doesn't exist")
             }
@@ -34,7 +31,6 @@ class Dochelper {
 
         fun identifyFile(file: File): String {
             val fileExt = getFileExt(file)
-            println(fileExt)
             if (fileExt.equals("doc")) {
                 try {
                     val hwpfDocument = HWPFDocument(FileInputStream(file))
@@ -100,7 +96,7 @@ class Dochelper {
                 for (i in 0.. range.numParagraphs()-1) {
                     val paragraph = range.getParagraph(i)
                     for (j in 0..paragraph.numCharacterRuns()-1) {
-                        val run = paragraph.getCharacterRun(i)
+                        val run = paragraph.getCharacterRun(j)
                         for ((key, value) in keysAndValues) {
                             run.replaceText(key, value)
                         }
@@ -131,8 +127,8 @@ class Dochelper {
             return xwpfDocument
         }
 
-        private fun getFileExt(file: File?): String {
-            if (file == null || !file.exists()) return ""
+        fun getFileExt(file: File?): String {
+            if (file == null) return ""
             if (file.name.contains(".")) {
                 return file.name.split(".")[1]
             } else {

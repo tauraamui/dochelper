@@ -96,11 +96,12 @@ class WindowPaneController {
     }
 
     private fun createOutput() {
-        //TODO: Need to change the way that it outputs files to handle version suffixes and using the correct extension
+
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
             val editedDoc = Dochelper.findAndReplaceKeysInDoc(file, keysAndValues)
-            if (fileTypeName.equals("unknown")) continue
-            val outputStream = FileOutputStream("$oxhDocsOutputFolder\\${patientFullNameTextField?.text} $fileTypeName.doc")
+            if (fileTypeName == "unknown") continue
+            val outputFilePath = getUniqueFileName(File("$oxhDocsOutputFolder\\${patientAbbrNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
+            val outputStream = FileOutputStream(File(outputFilePath))
             if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
             if (editedDoc is XWPFDocument) continue
             outputStream.close()
@@ -121,13 +122,20 @@ class WindowPaneController {
         return stringBuilder.toString()
     }
 
-    private fun saveUniqueCopy(file: File) {
+    private fun getUniqueFileName(file: File, extension: String): String {
+
         var fileToSave = file
         var versionSuffix = 1
+
+        val firstFile = File(file.absolutePath + "." + extension)
+        if (!firstFile.exists()) return firstFile.absolutePath
+
+        fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
+
         while (fileToSave.exists()) {
-            fileToSave = File("${file.name}$versionSuffix")
+            fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
             versionSuffix++
         }
-        fileToSave.createNewFile()
+        return fileToSave.absolutePath
     }
 }
