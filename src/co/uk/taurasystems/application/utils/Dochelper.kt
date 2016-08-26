@@ -135,5 +135,22 @@ class Dochelper {
                 return ""
             }
         }
+
+        fun getUniqueFileName(file: File, extension: String): String {
+
+            var fileToSave = file
+            var versionSuffix = 1
+
+            val firstFile = File(file.absolutePath + "." + extension)
+            if (!firstFile.exists()) return firstFile.absolutePath
+
+            fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
+
+            while (fileToSave.exists()) {
+                fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
+                versionSuffix++
+            }
+            return fileToSave.absolutePath
+        }
     }
 }

@@ -100,7 +100,7 @@ class WindowPaneController {
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
             val editedDoc = Dochelper.findAndReplaceKeysInDoc(file, keysAndValues)
             if (fileTypeName == "unknown") continue
-            val outputFilePath = getUniqueFileName(File("$oxhDocsOutputFolder\\${patientAbbrNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
+            val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder\\${patientAbbrNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
             val outputStream = FileOutputStream(File(outputFilePath))
             if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
             if (editedDoc is XWPFDocument) continue
@@ -120,22 +120,5 @@ class WindowPaneController {
             }
         }
         return stringBuilder.toString()
-    }
-
-    private fun getUniqueFileName(file: File, extension: String): String {
-
-        var fileToSave = file
-        var versionSuffix = 1
-
-        val firstFile = File(file.absolutePath + "." + extension)
-        if (!firstFile.exists()) return firstFile.absolutePath
-
-        fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
-
-        while (fileToSave.exists()) {
-            fileToSave = File(file.absolutePath + " $versionSuffix." + extension)
-            versionSuffix++
-        }
-        return fileToSave.absolutePath
     }
 }
