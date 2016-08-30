@@ -3,6 +3,7 @@ package co.uk.taurasystems.application.utils
 import org.apache.poi.hwpf.HWPFDocument
 import org.apache.poi.poifs.filesystem.NotOLE2FileException
 import org.apache.poi.poifs.filesystem.OfficeXmlFileException
+import org.apache.poi.xwpf.usermodel.TextSegement
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.File
 import java.io.FileInputStream
@@ -30,6 +31,12 @@ class Dochelper {
         }
 
         fun identifyFile(file: File): String {
+            if (documentTitleContains(file, "EMG", true)) return "EMG letter"
+            if (documentTitleContains(file, "invoice", true)) return "invoice"
+
+            //if (documentContains(file, "i n v o i c e")) return "invoice"
+            //if (documentContains(file, "a private appointment has been arranged")) return "letter"
+            /*
             val fileExt = getFileExt(file)
             if (fileExt.equals("doc")) {
                 try {
@@ -45,47 +52,67 @@ class Dochelper {
                     e.printStackTrace()
                 }
             } else if (fileExt.equals("docx")) {
-                return "not implemented docx"
+                throw NotImplementedError("Cannot handle .docx files atm")
             }
+            */
             return "unknown"
         }
 
-        fun findAndReplaceKeysInDoc(file: File?, keysAndValues: HashMap<String, String?>): Any? {
+        fun documentTitleContains(file: File, textToFind: String): Boolean {
+            if (isDoc(file) && file.name.contains(textToFind)) return true
+            else if (isDocx(file) && file.name.contains(textToFind)) return true
+            return false
+        }
 
-            if (getFileExt(file).equals("doc")) {
+        fun documentTitleContains(file: File, textToFind: String, toLower: Boolean): Boolean {
+            if (!toLower) return documentTitleContains(file, textToFind)
+            if (isDoc(file) && file.name.toLowerCase().contains(textToFind.toLowerCase())) return true
+            else if (isDocx(file) && file.name.toLowerCase().contains(textToFind.toLowerCase())) return true
+            return false
+        }
+
+        fun documentContains(file: File, textToFind: String): Boolean {
+            if (isDoc(file)) {
+                try {
+                    val hwpfDocument = HWPFDocument(FileInputStream(file))
+                    for (i in 0..hwpfDocument.range.numParagraphs()-1) {
+                        if (hwpfDocument.range.getParagraph(i).text().toLowerCase().contains(textToFind.toLowerCase())) return true
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else if (isDocx(file)) {
+                try {
+                    //TODO: Check to make sure this is actually they way to do string searching within a docx file...
+                    val xwpfDocument = XWPFDocument(FileInputStream(file))
+                    for (paragraph in xwpfDocument.paragraphsIterator) {
+                        if (paragraph.text.contains(textToFind)) return true
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            return false
+        }
+
+        private fun isDoc(file: File?): Boolean {
+            if (getFileExt(file) == "doc") return true
+            return false
+        }
+
+        private fun isDocx(file: File?): Boolean {
+            if (getFileExt(file) == "docx") return true
+            return false
+        }
+
+        fun findAndReplaceTagsInDoc(file: File, keysAndValues: HashMap<String, String?>): Any? {
+            if (isDoc(file)) {
                 return replaceTagsInLegacyDoc(file, keysAndValues)
-            } else if (getFileExt(file).equals("docx")) {
+            } else if (isDocx(file)) {
                 return replaceTagsInModernDoc(file, keysAndValues)
             } else {
                 throw Exception("extension must match either '.doc' or '.docx'")
             }
-
-            /*
-            var documentToReplaceTextWithin: HWPFDocument? = null
-            var fileInputStream: FileInputStream? = null
-            if (file?.name!!.contains('.') && file?.name!!.split('.')[1].equals("doc")) {
-                try {
-                    fileInputStream = FileInputStream(file)
-                    documentToReplaceTextWithin = HWPFDocument(fileInputStream)
-                    val range = documentToReplaceTextWithin.range
-                    for (i in 0..range.numParagraphs()-1) {
-                        val paragraph = range.getParagraph(i)
-                        for (j in 0..paragraph.numCharacterRuns()-1) {
-                            val run = paragraph.getCharacterRun(j)
-                            for ((key, value) in keysAndValues) {
-                                run.replaceText(key, value)
-                            }
-                        }
-                    }
-                    fileInputStream.close()
-                } catch (e: OfficeXmlFileException) {
-                    println("Document ${file?.name} is a newer .docx format...")
-                } catch (e: NotOLE2FileException) {
-                    println("Document ${file?.name} has an invalid header signature")
-                }
-            }
-            return documentToReplaceTextWithin
-            */
         }
 
         private fun replaceTagsInLegacyDoc(file: File?, keysAndValues: HashMap<String, String?>): HWPFDocument? {

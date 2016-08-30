@@ -1,5 +1,8 @@
 package co.uk.taurasystems.application.ui
 
+import co.uk.taurasystems.application.tests.DochelperTest
+import co.uk.taurasystems.application.ui.panes.LetterPaneController
+import co.uk.taurasystems.application.ui.panes.RootPaneController
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
@@ -12,7 +15,8 @@ import javafx.stage.Stage
 class Window : Application() {
 
     override fun start(primaryStage: Stage) {
-        val loader = FXMLLoader(WindowPaneController::class.java.getResource("WindowPane.fxml"))
+        //val loader = FXMLLoader(LetterPaneController::class.java.getResource("LetterPane.fxml"))
+        val loader = FXMLLoader(RootPaneController::class.java.getResource("RootPane.fxml"))
         primaryStage.scene = Scene(loader.load())
         primaryStage.show()
     }

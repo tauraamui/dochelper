@@ -1,10 +1,8 @@
-package co.uk.taurasystems.application.ui
+package co.uk.taurasystems.application.ui.panes
 
 import co.uk.taurasystems.application.utils.Dochelper
 import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.DatePicker
-import javafx.scene.control.TextField
+import javafx.scene.control.*
 import org.apache.poi.hwpf.HWPFDocument
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.File
@@ -17,7 +15,7 @@ import java.util.*
 /**
  * Created by tauraaamui on 15/08/2016.
  */
-class WindowPaneController {
+class LetterPaneController {
 
     @FXML var refTextField: TextField? = null
     @FXML var titleTextField: TextField? = null
@@ -33,6 +31,7 @@ class WindowPaneController {
     @FXML var appointmentTimeTextField: TextField? = null
     @FXML var okButton: Button? = null
     @FXML var cancelButton: Button? = null
+    @FXML var letterTypeComboBox: ComboBox<String>? = null
 
     private val keysAndValues = HashMap<String, String?>()
 
@@ -61,6 +60,11 @@ class WindowPaneController {
         if (!oxhDocsFolder.exists() || !oxhDocsFolder.isDirectory) oxhDocsFolder.mkdir()
         if (!oxhDocsOutputFolder.exists() || !oxhDocsOutputFolder.isDirectory) oxhDocsOutputFolder.mkdir()
         Dochelper.mapFiles(oxhDocsFolder)
+        for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
+            if (!fileTypeName.toLowerCase().contains("invoice")) {
+                letterTypeComboBox?.items?.add("${file.name}")
+            }
+        }
     }
 
     private fun setupDataMap() {
@@ -98,13 +102,15 @@ class WindowPaneController {
     private fun createOutput() {
 
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
-            val editedDoc = Dochelper.findAndReplaceKeysInDoc(file, keysAndValues)
+            val editedDoc = Dochelper.findAndReplaceTagsInDoc(file, keysAndValues)
             if (fileTypeName == "unknown") continue
-            val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder\\${patientAbbrNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
-            val outputStream = FileOutputStream(File(outputFilePath))
-            if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
-            if (editedDoc is XWPFDocument) continue
-            outputStream.close()
+            if (fileTypeName.contains("letter")) {
+                val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder\\${patientFullNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
+                val outputStream = FileOutputStream(File(outputFilePath))
+                if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
+                if (editedDoc is XWPFDocument) continue
+                outputStream.close()
+            }
         }
     }
 
