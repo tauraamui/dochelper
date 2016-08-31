@@ -2,21 +2,22 @@ package co.uk.taurasystems.application.ui.panes
 
 import co.uk.taurasystems.application.utils.Dochelper
 import javafx.fxml.FXML
-import javafx.scene.control.*
+import javafx.scene.control.ComboBox
+import javafx.scene.control.DatePicker
+import javafx.scene.control.TextField
 import org.apache.poi.hwpf.HWPFDocument
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.URL
-import java.text.SimpleDateFormat
 import java.util.*
+import co.uk.taurasystems.application.ui.openErrorDialog
 
 /**
  * Created by tauraaamui on 15/08/2016.
  */
 class LetterPaneController {
 
+    private var chosenTemplateFileName: String? = null
     @FXML var refTextField: TextField? = null
     @FXML var titleTextField: TextField? = null
     @FXML var patientFullNameTextField: TextField? = null
@@ -29,8 +30,6 @@ class LetterPaneController {
     @FXML var letterDatePicker: DatePicker? = null
     @FXML var appointmentDatePicker: DatePicker? = null
     @FXML var appointmentTimeTextField: TextField? = null
-    @FXML var okButton: Button? = null
-    @FXML var cancelButton: Button? = null
     @FXML var letterTypeComboBox: ComboBox<String>? = null
 
     private val keysAndValues = HashMap<String, String?>()
@@ -48,36 +47,40 @@ class LetterPaneController {
 
     fun initialize() {
         setupFileMap()
+        /*
         okButton?.setOnAction {e ->
             setupFileMap()
             setupDataMap()
             createOutput()
         }
         cancelButton?.setOnAction { e -> System.exit(0) }
+        */
     }
 
-    private fun setupFileMap() {
+    fun setupFileMap() {
+        if (letterTypeComboBox == null) return
         if (!oxhDocsFolder.exists() || !oxhDocsFolder.isDirectory) oxhDocsFolder.mkdir()
         if (!oxhDocsOutputFolder.exists() || !oxhDocsOutputFolder.isDirectory) oxhDocsOutputFolder.mkdir()
         Dochelper.mapFiles(oxhDocsFolder)
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
-            if (!fileTypeName.toLowerCase().contains("invoice")) {
-                letterTypeComboBox?.items?.add("${file.name}")
+            if (!fileTypeName.toLowerCase().contains("invoice") && !fileTypeName.toLowerCase().contains("unknown")) {
+                if (!((letterTypeComboBox?.items?.contains("${file.name}")) as Boolean)) letterTypeComboBox?.items?.add("${file.name}")
             }
         }
     }
 
-    private fun setupDataMap() {
+    fun setupDataMap() {
+        chosenTemplateFileName = letterTypeComboBox?.value
         keysAndValues.put("{ref}", refTextField?.text!!)
         keysAndValues.put("{date}", getDatePickerValue(letterDatePicker))
         keysAndValues.put("{title}", titleTextField?.text!!)
-        keysAndValues.put("{patient_full_name}", patientFullNameTextField?.text!!)
-        keysAndValues.put("{address_line_1}", addressLine1TextField?.text!!)
-        keysAndValues.put("{address_line_2}", addressLine2TextField?.text!!)
-        keysAndValues.put("{address_line_3}", addressLine3TextField?.text!!)
-        keysAndValues.put("{address_line_4}", addressLine4TextField?.text!!)
+        keysAndValues.put("{patient_full_name}", patientFullNameTextField?.text)
+        keysAndValues.put("{patient_abbreviated_name}", patientAbbrNameTextField?.text)
+        keysAndValues.put("{address_line_1}", addressLine1TextField?.text)
+        keysAndValues.put("{address_line_2}", addressLine2TextField?.text)
+        keysAndValues.put("{address_line_3}", addressLine3TextField?.text)
+        keysAndValues.put("{address_line_4}", addressLine4TextField?.text)
         keysAndValues.put("{post_code}", postCodeTextField?.text!!)
-        keysAndValues.put("{patient_abbreviated_name}", patientAbbrNameTextField?.text!!)
         //keysAndValues.put("{appointment_date_time}", getDatePickerValue(appointmentDatePicker) + " " + appointmentTimeTextField?.text!!)
         getDatePickerValue(datePicker = letterDatePicker)
         getDatePickerValue(datePicker = appointmentDatePicker)
@@ -99,19 +102,31 @@ class LetterPaneController {
         return formattedDate.toString()
     }
 
-    private fun createOutput() {
+    fun createOutput() {
 
+        if (chosenTemplateFileName.isNullOrEmpty()) {
+            openErrorDialog("Error Dialog", "Missing template", "Must select a template from the drop down")
+            return
+        } else {
+            val chosenTemplate = File("/oxh_docs/$chosenTemplateFileName")
+            val editedDoc = Dochelper.findAndReplaceTagsInDoc(chosenTemplate, keysAndValues)
+            //val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder/${patientFullNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
+            println(chosenTemplate.absolutePath)
+        }
+
+        /*
         for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
             val editedDoc = Dochelper.findAndReplaceTagsInDoc(file, keysAndValues)
             if (fileTypeName == "unknown") continue
             if (fileTypeName.contains("letter")) {
-                val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder\\${patientFullNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
+                val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder/${patientFullNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
                 val outputStream = FileOutputStream(File(outputFilePath))
                 if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
                 if (editedDoc is XWPFDocument) continue
                 outputStream.close()
             }
         }
+        */
     }
 
     private fun camelCase(stringToReformat: String): String {
