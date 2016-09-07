@@ -34,9 +34,11 @@ class RootPaneController {
 
         okButton?.setOnAction {e ->
             val letterPaneController = rootPaneLoader.getController<LetterPaneController>()
+            /*
             letterPaneController.setupFileMap()
             letterPaneController.setupDataMap()
             letterPaneController.createOutput()
+            */
         }
         cancelButton?.setOnAction { e -> System.exit(0) }
 

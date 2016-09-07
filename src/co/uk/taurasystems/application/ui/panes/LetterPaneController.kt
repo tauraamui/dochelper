@@ -1,5 +1,6 @@
 package co.uk.taurasystems.application.ui.panes
 
+import co.uk.taurasystems.application.managers.LetterManager
 import javafx.fxml.FXML
 import javafx.scene.control.ComboBox
 import javafx.scene.control.DatePicker
@@ -35,28 +36,21 @@ class LetterPaneController {
 
     private val keysAndValues = HashMap<String, String?>()
 
-    private val oxhDocsFolder = File("oxh_docs")
-    private val oxhDocsOutputFolder = File("oxh_docs/output")
-    private val filePathAndDocType = HashMap<String, File>()
+
+    //private val filePathAndDocType = HashMap<String, File>()
     //0     1     2     3     4     5     6     7     8     9
-    private var daysAndSuffixes = listOf<String>("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th",
-            //10    11    12    13    14    15    16    17    18    19
-            "th", "th", "th", "th", "th", "th", "th", "th", "th", "th",
-            //20    21    22    23    24    25    26    27    28    29
-            "th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th",
-            //30    31
-            "th", "st")
+
 
     fun initialize() {
-        setupFileMap()
-        /*
-        okButton?.setOnAction {e ->
-            setupFileMap()
-            setupDataMap()
-            createOutput()
+
+    }
+
+    fun setupFileList() {
+        LetterManager.findLetters()
+        letterTypeComboBox?.items?.clear()
+        LetterManager.lettersInRootFolder.forEach {
+            letterTypeComboBox?.items?.add("${it.name}")
         }
-        cancelButton?.setOnAction { e -> System.exit(0) }
-        */
     }
 
     fun setupFileMap() {
