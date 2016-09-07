@@ -55,7 +55,7 @@ class FileHelper {
         fun fileTitleContains(file: File?, textToFind: String): Boolean = file?.name!!.contains(textToFind)
 
         fun fileTitleContains(file: File?, textToFind: String, caseSensitive: Boolean): Boolean {
-            if (!caseSensitive) return fileTitleContains(file, textToFind)
+            if (caseSensitive) return fileTitleContains(file, textToFind)
             return file?.name?.toLowerCase()!!.contains(textToFind.toLowerCase())
         }
     }

@@ -33,8 +33,10 @@ class RootPaneController {
         letterFormTab.content = anchorPane
 
         okButton?.setOnAction {e ->
-            val letterPaneController = rootPaneLoader.getController<LetterPaneController>()
+            //TODO: Make this button choose the active tab content's controller and call the relevant functions
+            throw NotImplementedError("This button does nothing yet...")
             /*
+            val letterPaneController = rootPaneLoader.getController<LetterPaneController>()
             letterPaneController.setupFileMap()
             letterPaneController.setupDataMap()
             letterPaneController.createOutput()

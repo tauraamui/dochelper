@@ -36,13 +36,20 @@ class LetterPaneController {
 
     private val keysAndValues = HashMap<String, String?>()
 
+    private var daysAndSuffixes = listOf<String>("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th",
+            //10    11    12    13    14    15    16    17    18    19
+            "th", "th", "th", "th", "th", "th", "th", "th", "th", "th",
+            //20    21    22    23    24    25    26    27    28    29
+            "th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th",
+            //30    31
+            "th", "st")
+
 
     //private val filePathAndDocType = HashMap<String, File>()
-    //0     1     2     3     4     5     6     7     8     9
 
 
     fun initialize() {
-
+        setupFileList()
     }
 
     fun setupFileList() {
@@ -50,18 +57,6 @@ class LetterPaneController {
         letterTypeComboBox?.items?.clear()
         LetterManager.lettersInRootFolder.forEach {
             letterTypeComboBox?.items?.add("${it.name}")
-        }
-    }
-
-    fun setupFileMap() {
-        if (letterTypeComboBox == null) return
-        if (!oxhDocsFolder.exists() || !oxhDocsFolder.isDirectory) oxhDocsFolder.mkdir()
-        if (!oxhDocsOutputFolder.exists() || !oxhDocsOutputFolder.isDirectory) oxhDocsOutputFolder.mkdir()
-        mapFiles(oxhDocsFolder)
-        for ((fileTypeName, file) in filePathAndDocType) {
-            if (fileTypeName.toLowerCase().contains("emg")) {
-                letterTypeComboBox?.items?.add("${file.name}")
-            }
         }
     }
 
@@ -83,27 +78,9 @@ class LetterPaneController {
         keysAndValues.put("{appointment_date_time}", "${getDatePickerValue(appointmentDatePicker)} ${appointmentTimeTextField?.text}")
     }
 
-    private fun identifyFile(file: File): String {
-        if (FileHelper.fileTitleContains(file, "EMG", false)) return "EMG Letter"
-        if (FileHelper.fileTitleContains(file, "invoice", false)) return "invoice"
-        return "unknown"
-    }
-
-    private fun mapFiles(docDir: File?) {
-        try {
-            for (file in docDir?.listFiles()!!) {
-                if (file.isDirectory) continue
-                filePathAndDocType.put(identifyFile(file), file)
-            }
-        } catch (e: KotlinNullPointerException) {
-            println("oxh_docs folder doesn't exist")
-        }
-    }
-
     private fun getDatePickerValue(datePicker: DatePicker?): String {
         //var formattedDate: StringBuilder = StringBuilder()
         val calendar = Calendar.getInstance()
-
         if (datePicker == null || datePicker.value == null) return ""
 
         val day = datePicker.value.dayOfMonth
@@ -122,7 +99,7 @@ class LetterPaneController {
         } else {
             val chosenTemplate = File("/oxh_docs/$chosenTemplateFileName")
             for ((key, value) in keysAndValues) { WordDocHelper.replaceTextInDocument(key, value) }
-            val outputFilePath = FileHelper.getUniqueFileName(File("$oxhDocsOutputFolder/${patientFullNameTextField?.text?.trimEnd()} ${FileHelper.getFileExt(chosenTemplate)}"))
+            val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} ${FileHelper.getFileExt(chosenTemplate)}"))
             println(chosenTemplate.absolutePath)
         }
 

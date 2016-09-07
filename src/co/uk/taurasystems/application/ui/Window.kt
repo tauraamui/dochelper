@@ -1,6 +1,7 @@
 package co.uk.taurasystems.application.ui
 
 import co.uk.taurasystems.application.ui.panes.RootPaneController
+import co.uk.taurasystems.application.utils.FileHelper
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
