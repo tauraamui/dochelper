@@ -65,8 +65,8 @@ class LetterPaneController {
         if (!oxhDocsOutputFolder.exists() || !oxhDocsOutputFolder.isDirectory) oxhDocsOutputFolder.mkdir()
         mapFiles(oxhDocsFolder)
         for ((fileTypeName, file) in filePathAndDocType) {
-            if (!fileTypeName.toLowerCase().contains("invoice") && !fileTypeName.toLowerCase().contains("unknown")) {
-                if (!((letterTypeComboBox?.items?.contains("${file.name}")) as Boolean)) letterTypeComboBox?.items?.add("${file.name}")
+            if (fileTypeName.toLowerCase().contains("emg")) {
+                letterTypeComboBox?.items?.add("${file.name}")
             }
         }
     }
@@ -90,8 +90,8 @@ class LetterPaneController {
     }
 
     private fun identifyFile(file: File): String {
-        if (FileHelper.fileTitleContains(file, "EMG", true)) return "EMG Letter"
-        if (FileHelper.fileTitleContains(file, "invoice", true)) return "invoice"
+        if (FileHelper.fileTitleContains(file, "EMG", false)) return "EMG Letter"
+        if (FileHelper.fileTitleContains(file, "invoice", false)) return "invoice"
         return "unknown"
     }
 
