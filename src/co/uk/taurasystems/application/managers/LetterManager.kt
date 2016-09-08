@@ -12,7 +12,7 @@ class LetterManager {
 
     companion object {
         val oxhDocsFolder = File("oxh_docs")
-        val oxhDocsOutputFolder = File("oxh_docs/output")
+        val oxhDocsOutputFolder = File("oxh_docs/output/letters")
 
         val lettersInRootFolder = arrayListOf<File>()
 

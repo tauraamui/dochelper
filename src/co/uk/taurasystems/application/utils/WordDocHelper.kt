@@ -31,6 +31,8 @@ class WordDocHelper {
                     //TODO: Need to change exception type to something more relevant
                     throw Exception("Incorrect file extension for Word documents")
                 }
+            } else {
+                throw Exception("Template file doesn't exist: ${file.name}")
             }
         }
 
@@ -147,6 +149,7 @@ class WordDocHelper {
             } else if (modernWordDocumentOpen) {
                 modernWordDocument.write(outputStream)
             }
+            outputStream.close()
         }
     }
 }

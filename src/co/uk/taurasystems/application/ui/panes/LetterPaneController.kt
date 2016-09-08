@@ -99,6 +99,7 @@ class LetterPaneController {
         } else {
             val chosenTemplate = File("oxh_docs/$chosenTemplateFileName")
             WordDocHelper.openDocument(chosenTemplate)
+            println(WordDocHelper.getDocumentContent())
             for ((key, value) in keysAndValues) { WordDocHelper.replaceTextInDocument(key, value) }
             val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} EMG Letter.${FileHelper.getFileExt(chosenTemplate)}"))
             println(chosenTemplate.absolutePath)
