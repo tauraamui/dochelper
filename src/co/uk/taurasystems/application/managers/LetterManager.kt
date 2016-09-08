@@ -23,13 +23,16 @@ class LetterManager {
                 oxhDocsFolder.listFiles().forEach {
                     if (it.exists()) {
                         if (FileHelper.fileTitleContains(it, "emg", false) || FileHelper.fileTitleContains(it, "letter", false)) {
-                            println(it.name)
                             if (!lettersInRootFolder.contains(it)) lettersInRootFolder.add(it)
 
                         }
                     }
                 }
             } else { throw FileNotFoundException("Folder doesn't exist or is not a folder: ${oxhDocsFolder.absolutePath}")}
+        }
+
+        fun outputLetter(letterNameToOutput: String) {
+
         }
     }
 }

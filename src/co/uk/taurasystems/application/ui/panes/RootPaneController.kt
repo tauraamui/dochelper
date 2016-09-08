@@ -21,10 +21,10 @@ class RootPaneController {
     fun initialize() {
         val letterFormTab = Tab("Letter")
         val invoiceFormTab = Tab("Invoice")
-        val rootPaneLoader = FXMLLoader(RootPaneController::class.java.getResource("LetterPane.fxml"))
+        val letterPaneLoader = FXMLLoader(RootPaneController::class.java.getResource("LetterPane.fxml"))
         val scrollPane = ScrollPane()
         val anchorPane = AnchorPane()
-        scrollPane.content = rootPaneLoader.load()
+        scrollPane.content = letterPaneLoader.load()
         AnchorPane.setTopAnchor(scrollPane, 0.toDouble())
         AnchorPane.setBottomAnchor(scrollPane, 0.toDouble())
         AnchorPane.setRightAnchor(scrollPane, 0.toDouble())
@@ -33,10 +33,19 @@ class RootPaneController {
         letterFormTab.content = anchorPane
 
         okButton?.setOnAction {e ->
-            //TODO: Make this button choose the active tab content's controller and call the relevant functions
-            throw NotImplementedError("This button does nothing yet...")
+
+            val selectedTab = tabPane?.tabs?.get(tabPane?.selectionModel?.selectedIndex!!)
+
+            when (selectedTab) {
+                letterFormTab -> {
+                    val letterPaneController = letterPaneLoader.getController<LetterPaneController>()
+                    letterPaneController.setupDataMap()
+                    letterPaneController.createOutput()
+                }
+            }
+
             /*
-            val letterPaneController = rootPaneLoader.getController<LetterPaneController>()
+            val letterPaneController = letterPaneLoader.getController<LetterPaneController>()
             letterPaneController.setupFileMap()
             letterPaneController.setupDataMap()
             letterPaneController.createOutput()

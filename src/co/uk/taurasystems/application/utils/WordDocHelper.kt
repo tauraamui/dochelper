@@ -4,6 +4,7 @@ import org.apache.poi.hwpf.HWPFDocument
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 
 /**
  * Created by tauraaamui on 15/08/2016.
@@ -18,9 +19,9 @@ class WordDocHelper {
         private var modernWordDocument = XWPFDocument()
         private var modernWordDocumentOpen = false
 
-        fun openWordDocument(file: File?) {
+        fun openDocument(file: File?) {
             if (file == null) return
-            closeWordDocument()
+            closeDocument()
             if (file.exists()) {
                 if (FileHelper.getFileExt(file) == "docx") {
                     openModernWordDocument(file)
@@ -28,7 +29,7 @@ class WordDocHelper {
                     openLegacyWordDocument(file)
                 } else {
                     //TODO: Need to change exception type to something more relevant
-                    throw Exception("Incorrect file extension for Excel workbooks")
+                    throw Exception("Incorrect file extension for Word documents")
                 }
             }
         }
@@ -44,19 +45,19 @@ class WordDocHelper {
             legacyWordDocumentOpen = true
         }
 
-        fun closeWordDocument() {
-            closeLegacyWordDocument()
-            closeModernWordDocument()
+        fun closeDocument() {
+            closeLegacyDocument()
+            closeModernDocument()
         }
 
-        private fun closeLegacyWordDocument() {
+        private fun closeLegacyDocument() {
             if (legacyWordDocumentOpen) {
                 legacyWordDocument?.dataStream?.inputStream()?.close()
                 legacyWordDocumentOpen = false
             }
         }
 
-        private fun closeModernWordDocument() {
+        private fun closeModernDocument() {
             if (modernWordDocumentOpen) {
                 modernWordDocument.close()
                 modernWordDocumentOpen = false
@@ -121,6 +122,7 @@ class WordDocHelper {
         }
 
         fun getDocumentContent(): String {
+            println("Legacy document open: $legacyWordDocumentOpen\nModern document open $modernWordDocumentOpen")
             if (legacyWordDocumentOpen) {
                 for (i in 0..legacyWordDocument?.range?.numParagraphs()!!-1) {
                     val paragraph = legacyWordDocument?.range?.getParagraph(i)
@@ -137,6 +139,14 @@ class WordDocHelper {
                 return ""
             }
             return "Document console out failed..."
+        }
+
+        fun output(outputStream: FileOutputStream) {
+            if (legacyWordDocumentOpen) {
+                legacyWordDocument?.write(outputStream)
+            } else if (modernWordDocumentOpen) {
+                modernWordDocument.write(outputStream)
+            }
         }
     }
 }

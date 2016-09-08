@@ -97,10 +97,13 @@ class LetterPaneController {
             openErrorDialog("Error Dialog", "Missing template", "Must select a template from the drop down")
             return
         } else {
-            val chosenTemplate = File("/oxh_docs/$chosenTemplateFileName")
+            val chosenTemplate = File("oxh_docs/$chosenTemplateFileName")
+            WordDocHelper.openDocument(chosenTemplate)
             for ((key, value) in keysAndValues) { WordDocHelper.replaceTextInDocument(key, value) }
-            val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} ${FileHelper.getFileExt(chosenTemplate)}"))
+            val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} EMG Letter.${FileHelper.getFileExt(chosenTemplate)}"))
             println(chosenTemplate.absolutePath)
+            WordDocHelper.output(FileOutputStream(File(outputFilePath)))
+            WordDocHelper.closeDocument()
         }
 
         /*
