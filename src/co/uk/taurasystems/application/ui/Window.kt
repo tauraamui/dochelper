@@ -1,6 +1,6 @@
 package co.uk.taurasystems.application.ui
 
-import co.uk.taurasystems.application.ui.panes.RootPaneController
+import co.uk.taurasystems.application.ui.panes.controllers.RootPaneController
 import co.uk.taurasystems.application.utils.FileHelper
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
@@ -17,7 +17,7 @@ class Window : Application() {
 
     override fun start(primaryStage: Stage) {
         //val loader = FXMLLoader(LetterPaneController::class.java.getResource("LetterPane.fxml"))
-        val loader = FXMLLoader(RootPaneController::class.java.getResource("RootPane.fxml"))
+        val loader = FXMLLoader(RootPaneController::class.java.getResource("/co/uk/taurasystems/application/ui/panes/views/RootPane.fxml"))
         primaryStage.scene = Scene(loader.load())
         primaryStage.show()
     }

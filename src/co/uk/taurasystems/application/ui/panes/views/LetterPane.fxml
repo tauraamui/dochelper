@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.uk.taurasystems.application.ui.panes.LetterPaneController">
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.uk.taurasystems.application.ui.panes.controllers.LetterPaneController">
    <children>
       <GridPane hgap="10.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -62,7 +62,7 @@
             <TextField fx:id="appointmentTimeTextField" GridPane.columnIndex="2" GridPane.rowIndex="14" />
             <DatePicker fx:id="letterDatePicker" GridPane.columnIndex="2" GridPane.rowIndex="4" />
             <DatePicker fx:id="appointmentDatePicker" GridPane.columnIndex="2" GridPane.rowIndex="13" />
-            <Label text="Letter Type" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+            <Label text="Template Document" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
             <ComboBox fx:id="letterTypeComboBox" maxWidth="1.7976931348623157E308" prefHeight="26.0" prefWidth="271.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
          </children>
       </GridPane>

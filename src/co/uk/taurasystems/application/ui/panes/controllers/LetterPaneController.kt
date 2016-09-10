@@ -1,4 +1,4 @@
-package co.uk.taurasystems.application.ui.panes
+package co.uk.taurasystems.application.ui.panes.controllers
 
 import co.uk.taurasystems.application.managers.LetterManager
 import javafx.fxml.FXML
@@ -101,8 +101,7 @@ class LetterPaneController {
             WordDocHelper.openDocument(chosenTemplate)
             println(WordDocHelper.getDocumentContent())
             for ((key, value) in keysAndValues) { WordDocHelper.replaceTextInDocument(key, value) }
-            val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} EMG Letter.${FileHelper.getFileExt(chosenTemplate)}"))
-            println(chosenTemplate.absolutePath)
+            val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.Companion.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} EMG Letter.${FileHelper.Companion.getFileExt(chosenTemplate)}"))
             WordDocHelper.output(FileOutputStream(File(outputFilePath)))
             WordDocHelper.closeDocument()
         }

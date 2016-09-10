@@ -1,4 +1,4 @@
-package co.uk.taurasystems.application.ui.panes
+package co.uk.taurasystems.application.ui.panes.controllers
 
 import co.uk.taurasystems.application.ui.Window
 import javafx.fxml.FXML
@@ -21,7 +21,7 @@ class RootPaneController {
     fun initialize() {
         val letterFormTab = Tab("Letter")
         val invoiceFormTab = Tab("Invoice")
-        val letterPaneLoader = FXMLLoader(RootPaneController::class.java.getResource("LetterPane.fxml"))
+        val letterPaneLoader = FXMLLoader(RootPaneController::class.java.getResource("/co/uk/taurasystems/application/ui/panes/views/LetterPane.fxml"))
         val scrollPane = ScrollPane()
         val anchorPane = AnchorPane()
         scrollPane.content = letterPaneLoader.load()
