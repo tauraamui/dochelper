@@ -1,13 +1,11 @@
 package co.uk.taurasystems.application.ui
 
+import co.uk.taurasystems.application.ui.gen.TabPaneGen
 import co.uk.taurasystems.application.ui.panes.controllers.RootPaneController
-import co.uk.taurasystems.application.utils.FileHelper
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.stage.Stage
-import java.io.File
-import java.util.*
 
 /**
  * Created by tauraaamui on 15/08/2016.
@@ -25,8 +23,9 @@ class Window : Application() {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            //Dochelper.findAndReplaceTagsInDoc(File("oxh_docs/testDocument.docx"), HashMap<String, String?>())
-            launch(Window::class.java)
+            val tabPaneGen = TabPaneGen()
+            tabPaneGen.loadTabs()
+            //launch(Window::class.java)
         }
     }
 }

@@ -98,27 +98,17 @@ class LetterPaneController {
             return
         } else {
             val chosenTemplate = File("oxh_docs/$chosenTemplateFileName")
-            WordDocHelper.openDocument(chosenTemplate)
-            println(WordDocHelper.getDocumentContent())
-            for ((key, value) in keysAndValues) { WordDocHelper.replaceTextInDocument(key, value) }
-            val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.Companion.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} EMG Letter.${FileHelper.Companion.getFileExt(chosenTemplate)}"))
-            WordDocHelper.output(FileOutputStream(File(outputFilePath)))
-            WordDocHelper.closeDocument()
-        }
-
-        /*
-        for ((fileTypeName, file) in Dochelper.filePathAndDocType) {
-            val editedDoc = Dochelper.findAndReplaceTagsInDoc(file, keysAndValues)
-            if (fileTypeName == "unknown") continue
-            if (fileTypeName.contains("letter")) {
-                val outputFilePath = Dochelper.getUniqueFileName(File("$oxhDocsOutputFolder/${patientFullNameTextField?.text?.trimEnd()} $fileTypeName"), Dochelper.getFileExt(file))
-                val outputStream = FileOutputStream(File(outputFilePath))
-                if (editedDoc is HWPFDocument) editedDoc.write(outputStream)
-                if (editedDoc is XWPFDocument) continue
-                outputStream.close()
+            if (chosenTemplate.exists()) {
+                WordDocHelper.openDocument(chosenTemplate)
+                println(WordDocHelper.getDocumentContent())
+                for ((key, value) in keysAndValues) { WordDocHelper.replaceTextInDocument(key, value) }
+                val outputFilePath = FileHelper.getUniqueFileName(File("${LetterManager.Companion.oxhDocsOutputFolder}/${patientFullNameTextField?.text?.trimEnd()} EMG Letter.${FileHelper.Companion.getFileExt(chosenTemplate)}"))
+                WordDocHelper.output(FileOutputStream(File(outputFilePath)))
+                WordDocHelper.closeDocument()
+            } else {
+                openErrorDialog("Error Dialog", "File not found", "Cannot find template document online")
             }
         }
-        */
     }
 
     private fun camelCase(stringToReformat: String): String {

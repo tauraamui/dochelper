@@ -1,0 +1,16 @@
+<root_window>
+	<tab title="Letter">
+		<named_field name="Ref #" type="plain_text" tag="{ref}"/>
+		<named_date_picker name="Letter Date" format="dd/mm/yy" tag="{date}"/>
+		<named_field name="Title: (Mr/Mrs/Miss)" type="plain_text" tag="{title}"/>
+		<named_field name="Patient Full Name" type="plain_text" tag="{patient_full_name}"/>
+		<named_field name="Patient Abbr. Name" type="plain_text" tag="{patient_abbreviated_name}"/>
+		<named_field name="Address Line 1" type="plain_text" tag="{address_line_1}"/>
+		<named_field name="Address Line 2" type="plain_text" tag="{address_line_2}"/>
+		<named_field name="Address Line 3" type="plain_text" tag="{address_line_3}"/>
+		<named_field name="Address Line 4" type="plain_text" tag="{address_line_4}"/>
+		<named_field name="Post Code" type="plain_text" tag="{post_code}"/>
+		<named_date_picker name="Appointment Date" format="dd/mm/yy" tag="{appointment_date}"/>
+		<named_field name="Appointment Time" type="plain_text" tag="{appointment_time}"/>
+	</tab>
+</root_window>
