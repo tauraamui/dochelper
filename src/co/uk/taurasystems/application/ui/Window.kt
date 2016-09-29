@@ -24,7 +24,7 @@ class Window : Application() {
         @JvmStatic
         fun main(args: Array<String>) {
             val tabPaneGen = TabPaneGen()
-            tabPaneGen.loadTabs()
+            tabPaneGen.generateRootPane()
             //launch(Window::class.java)
         }
     }

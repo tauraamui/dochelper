@@ -1,8 +1,10 @@
 package co.uk.taurasystems.application.utils
 
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.lang.reflect.Field
 import java.net.URL
 import java.util.*
@@ -12,6 +14,19 @@ import javax.xml.parsers.DocumentBuilderFactory
  * Created by kongsin on 26/4/2559.
  */
 class XMLParser {
+
+    fun loadXMLDoc(name: String): Document {
+        val scanner = Scanner(File(name))
+        val strBuilder = StringBuilder()
+
+        while (scanner.hasNext()) { strBuilder.append(scanner.nextLine()) }
+        val factory = DocumentBuilderFactory.newInstance()
+        val builder = factory.newDocumentBuilder()
+        val byteStream = ByteArrayInputStream(strBuilder.toString().toByteArray())
+        val doc = builder.parse(byteStream)
+        doc.documentElement.normalize()
+        return doc
+    }
 
     fun fromXML(url : URL, obj : Any) : Any {
         val scanner = Scanner(url.openStream())
