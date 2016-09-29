@@ -23,7 +23,7 @@ data class GenNamedList(var name: String, var type: String, var source: String):
 data class GenNamedField(var name: String, var type: String, var tag: String): GenElement
 data class GenNamedDatePicker(var name: String, var format: String, var tag: String): GenElement
 
-class TabPaneGen {
+class RootPaneGen {
 
     fun generateRootPane(primaryStage: Stage): Scene {
         val formXML = XMLParser().loadXMLDoc("form.xml")

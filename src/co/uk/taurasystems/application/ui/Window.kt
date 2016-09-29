@@ -1,10 +1,7 @@
 package co.uk.taurasystems.application.ui
 
-import co.uk.taurasystems.application.ui.gen.TabPaneGen
-import co.uk.taurasystems.application.ui.panes.controllers.RootPaneController
+import co.uk.taurasystems.application.ui.gen.RootPaneGen
 import javafx.application.Application
-import javafx.fxml.FXMLLoader
-import javafx.scene.Scene
 import javafx.stage.Stage
 
 /**
@@ -21,8 +18,8 @@ class Window : Application() {
         primaryStage.show()
         */
 
-        val tabPaneGen = TabPaneGen()
-        primaryStage.scene = tabPaneGen.generateRootPane(primaryStage)
+        val rootPaneGen = RootPaneGen()
+        primaryStage.scene = rootPaneGen.generateRootPane(primaryStage)
         primaryStage.show()
     }
 
