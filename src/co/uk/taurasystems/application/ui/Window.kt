@@ -14,18 +14,22 @@ import javafx.stage.Stage
 class Window : Application() {
 
     override fun start(primaryStage: Stage) {
+        /*
         //val loader = FXMLLoader(LetterPaneController::class.java.getResource("LetterPane.fxml"))
         val loader = FXMLLoader(RootPaneController::class.java.getResource("/co/uk/taurasystems/application/ui/panes/views/RootPane.fxml"))
         primaryStage.scene = Scene(loader.load())
+        primaryStage.show()
+        */
+
+        val tabPaneGen = TabPaneGen()
+        primaryStage.scene = tabPaneGen.generateRootPane(primaryStage)
         primaryStage.show()
     }
 
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val tabPaneGen = TabPaneGen()
-            tabPaneGen.generateRootPane()
-            //launch(Window::class.java)
+            launch(Window::class.java)
         }
     }
 }

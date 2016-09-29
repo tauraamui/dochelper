@@ -1,5 +1,6 @@
-<root_window>
+<root_window title="Dochelper" width="800" height="600">
 	<tab title="Letter">
+		<named_list name="Letter Templates" type="drop down" source="letter_templates"/>
 		<named_field name="Ref #" type="plain_text" tag="{ref}"/>
 		<named_date_picker name="Letter Date" format="dd/mm/yy" tag="{date}"/>
 		<named_field name="Title: (Mr/Mrs/Miss)" type="plain_text" tag="{title}"/>
@@ -12,5 +13,8 @@
 		<named_field name="Post Code" type="plain_text" tag="{post_code}"/>
 		<named_date_picker name="Appointment Date" format="dd/mm/yy" tag="{appointment_date}"/>
 		<named_field name="Appointment Time" type="plain_text" tag="{appointment_time}"/>
+	</tab>
+	<tab title="Test tab 1">
+		<named_field name="Test field"/>
 	</tab>
 </root_window>
