@@ -20,10 +20,10 @@ class TabPaneGen {
 
     fun generateRootPane() {
         val formXML = XMLParser().loadXMLDoc("form.xml")
-        val genTabModels = generateTabsModel(formXML)
+        val genTabModels = generateTabsModels(formXML)
     }
 
-    private fun generateTabsModel(document: Document): ArrayList<GenTab> {
+    private fun generateTabsModels(document: Document): ArrayList<GenTab> {
 
         val genTabs = ArrayList<GenTab>()
 
