@@ -165,31 +165,36 @@ class RootPaneGen {
     private fun createOKButton(layoutManager: GridPane, genElements: ArrayList<GenElement>): Button {
         val okButton = Button("OK")
         okButton.onAction = EventHandler {
-            val tagsAndValues = HashMap<String, String>()
-            var templateFile = File("")
-            for (genElement in genElements) {
-                layoutManager.children.forEach {
-                    if (it.id == genElement.tag) {
-                        if (it is ComboBox<*> && genElement is GenNamedList) {
-                            val selectedIndex = it.selectionModel.selectedIndex
-                            if (selectedIndex >= 0) {
-                                templateFile = File(genElement.source.plus("/${it.items[selectedIndex]}"))
-                            } else {
-                                openErrorDialog("Error", "No template selected", "Please select a template from the drop down..."); return@EventHandler
-                            }
-                        } else if (it is TextField && genElement is GenNamedField) {
-                            tagsAndValues.put(it.id, it.text)
-                        } else if (it is DatePicker && genElement is GenNamedDatePicker) {
-                            //TODO: find out the correct way to get the date with a certain format...
-                            //val dateValue = it.value.toString()
-                            //tagsAndValues.put(it.id, it.value.toString())
-                        }
-                    }
-                }
-            }
+            val tagsAndValues = getTagsAndValues(layoutManager, genElements)
             tagsAndValues.forEach { key, value ->  println("$key $value")}
         }
         return okButton
+    }
+
+    private fun getTagsAndValues(layoutManager: GridPane, genElements: ArrayList<GenElement>): HashMap<String, String> {
+        val tagsAndValues = HashMap<String, String>()
+        var templateFile = File("")
+        for (genElement in genElements) {
+            layoutManager.children.forEach {
+                if (it.id == genElement.tag) {
+                    if (it is ComboBox<*> && genElement is GenNamedList) {
+                        val selectedIndex = it.selectionModel.selectedIndex
+                        if (selectedIndex >= 0) {
+                            templateFile = File(genElement.source.plus("/${it.items[selectedIndex]}"))
+                        } else {
+                            openErrorDialog("Error", "No template selected", "Please select a template from the drop down..."); return@forEach
+                        }
+                    } else if (it is TextField && genElement is GenNamedField) {
+                        tagsAndValues.put(it.id, it.text)
+                    } else if (it is DatePicker && genElement is GenNamedDatePicker) {
+                        //TODO: find out the correct way to get the date with a certain format...
+                        //val dateValue = it.value.toString()
+                        //tagsAndValues.put(it.id, it.value.toString())
+                    }
+                }
+            }
+        }
+        return tagsAndValues
     }
 
     private fun getTemplateList(sourceDir: File): Array<File> {
