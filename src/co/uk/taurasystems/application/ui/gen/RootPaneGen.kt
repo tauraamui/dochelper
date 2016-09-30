@@ -52,46 +52,12 @@ class RootPaneGen {
                     val genTabModels = generateTabsModels(formXML)
 
                     for (genTabModel in genTabModels) {
+                        println("Tab ${genTabModel.title}")
                         genTabModel.genElements.forEach { println(it) }
                     }
 
-                    for (genTabModel in genTabModels) {
-                        val tab = Tab()
-                        tab.text = genTabModel.title
-                        val layoutManager = GridPane()
-                        layoutManager.vgap = 5.0
-                        layoutManager.hgap = 5.0
-                        layoutManager.padding = Insets(10.0, 10.0, 10.0, 10.0)
-                        layoutManager.addColumn(0)
-                        layoutManager.addColumn(1)
+                    generateTabsFromModels(genTabModels).forEach { tabPane.tabs.add(it) }
 
-                        genTabModel.genElements.forEachIndexed { i, genElement ->
-                            layoutManager.addRow(i)
-
-                            if (genElement is GenNamedList) {
-                                val nameLabel = Label(genElement.name)
-                                nameLabel.id = genElement.name.replace(" ", "_").plus("_Label")
-                                layoutManager.add(nameLabel, 0, i)
-                                //TODO: add generation of template list
-                            } else if (genElement is GenNamedField) {
-                                val nameLabel = Label(genElement.name)
-                                nameLabel.id = genElement.name.replace(" ", "_").plus("_Label")
-                                layoutManager.add(nameLabel, 0, i)
-                                val field = TextField()
-                                field.id = genElement.name.replace(" ", "_")
-                                layoutManager.add(field, 1, i)
-                            } else if (genElement is GenNamedDatePicker) {
-                                val nameLabel = Label(genElement.name)
-                                nameLabel.id = genElement.name.replace(" ", "_").plus("_Label")
-                                layoutManager.add(nameLabel, 0, i)
-                                val datePicker = DatePicker()
-                                datePicker.id = genElement.name.replace(" ", "_")
-                                layoutManager.add(datePicker, 1, i)
-                            }
-                        }
-                        tab.content = layoutManager
-                        tabPane.tabs.add(tab)
-                    }
                     return scene
                 } else {
                     throw Exception("Name of root node must be 'root_window'")
@@ -104,10 +70,67 @@ class RootPaneGen {
         }
     }
 
-    private fun getTemplateList(sourcePath: String) {
-        val sourceDirectory = File(sourcePath)
-        if (sourceDirectory.exists() && sourceDirectory.isDirectory) {
-            //TODO: Finish off this method
+    private fun generateTabsFromModels(genTabModels: ArrayList<GenTab>): ArrayList<Tab> {
+        val tabList = ArrayList<Tab>()
+        for (genTabModel in genTabModels) {
+            val tab = Tab()
+            tab.text = genTabModel.title
+            val layoutManager = GridPane()
+            layoutManager.vgap = 5.0
+            layoutManager.hgap = 5.0
+            layoutManager.padding = Insets(10.0, 10.0, 10.0, 10.0)
+            layoutManager.addColumn(0)
+            layoutManager.addColumn(1)
+
+            genTabModel.genElements.forEachIndexed { i, genElement ->
+                layoutManager.addRow(i)
+
+                if (genElement is GenNamedList) {
+                    val nameLabel = Label(genElement.name)
+                    nameLabel.id = genElement.name.replace(" ", "_").plus("_Label")
+                    layoutManager.add(nameLabel, 0, i)
+
+                    val comboBox = ComboBox<String>()
+                    val source = File(genElement.source)
+                    val templateList = getTemplateList(source)
+
+                    templateList.forEach { comboBox.items.add(it.name) }
+                    layoutManager.add(comboBox, 1, i)
+
+                } else if (genElement is GenNamedField) {
+                    val nameLabel = Label(genElement.name)
+                    nameLabel.id = genElement.name.replace(" ", "_").plus("_Label")
+                    layoutManager.add(nameLabel, 0, i)
+
+                    val field = TextField()
+                    field.id = genElement.tag
+                    layoutManager.add(field, 1, i)
+
+                } else if (genElement is GenNamedDatePicker) {
+                    val nameLabel = Label(genElement.name)
+                    nameLabel.id = genElement.name.replace(" ", "_").plus("_Label")
+                    layoutManager.add(nameLabel, 0, i)
+
+                    val datePicker = DatePicker()
+                    datePicker.id = genElement.tag
+                    layoutManager.add(datePicker, 1, i)
+                }
+            }
+            tab.content = layoutManager
+            tabList.add(tab)
+        }
+        return tabList
+    }
+
+    private fun getTemplateList(sourceDir: File): Array<File> {
+        if (sourceDir.exists()) {
+            if (sourceDir.isDirectory) {
+                return sourceDir.listFiles()
+            } else {
+                throw Exception("Source must be a directory")
+            }
+        } else {
+            throw Exception("Source directory ${sourceDir.name} does not exist...")
         }
     }
 
@@ -129,6 +152,7 @@ class RootPaneGen {
                 when (tabChildNodeData.nodeName) {
                     "named_field" -> genElements.add(createNamedFieldModel(tabChildNodeData as Element))
                     "named_date_picker" -> genElements.add(createNamedDatePickerModel(tabChildNodeData as Element))
+                    "named_list" -> genElements.add(createNamedListModel(tabChildNodeData as Element))
                 }
             }
             genTab.genElements = genElements
@@ -151,5 +175,13 @@ class RootPaneGen {
         genNamedDatePicker.format = element.getAttribute("format")
         genNamedDatePicker.tag = element.getAttribute("tag")
         return genNamedDatePicker
+    }
+
+    private fun createNamedListModel(element: Element): GenNamedList {
+        val genNamedList = GenNamedList("", "", "")
+        genNamedList.name = element.getAttribute("name")
+        genNamedList.type = element.getAttribute("type")
+        genNamedList.source = element.getAttribute("source")
+        return genNamedList
     }
 }
