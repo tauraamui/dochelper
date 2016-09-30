@@ -2,6 +2,8 @@ package co.uk.taurasystems.application.ui.gen
 
 import co.uk.taurasystems.application.getRowCount
 import co.uk.taurasystems.application.ui.openErrorDialog
+import co.uk.taurasystems.application.utils.FileHelper
+import co.uk.taurasystems.application.utils.WordDocHelper
 import co.uk.taurasystems.application.utils.XMLParser
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -11,10 +13,15 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.GridPane
 import javafx.stage.Stage
+import javafx.util.StringConverter
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.awt.GridLayout
 import java.io.File
+import java.io.FileOutputStream
+import java.time.LocalDate
+import java.time.chrono.ChronoLocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -36,13 +43,12 @@ class GenTab : GenElement {
     override var tag = ""
     var title: String = ""
     var genElements: ArrayList<GenElement> = ArrayList<GenElement>()
+    var outputDirectory: File = File("")
 
     constructor(title: String, genElements: ArrayList<GenElement>) {
         this.title = title
         this.genElements = genElements
     }
-
-    //TODO: Add additional methods, for stuff that I've forgotten... :P
 }
 
 class RootPaneGen {
@@ -77,11 +83,6 @@ class RootPaneGen {
                     }
 
                     val genTabModels = generateTabsModels(formXML)
-
-                    for (genTabModel in genTabModels) {
-                        println("Tab ${genTabModel.title}")
-                        genTabModel.genElements.forEach { println(it) }
-                    }
 
                     generateTabsFromModels(genTabModels).forEach { tabPane.tabs.add(it) }
 
@@ -124,6 +125,7 @@ class RootPaneGen {
                     val templateList = getTemplateList(source)
 
                     templateList.forEach { comboBox.items.add(it.name) }
+                    comboBox.id = genElement.tag
                     layoutManager.add(comboBox, 1, i)
 
                 } else if (genElement is GenNamedField) {
@@ -146,27 +148,30 @@ class RootPaneGen {
                 }
             }
             //so meta, but getRowCount is an extension method, check the 'ExtensionMethods.kt' file
-            println(layoutManager.getRowCount())
-            appendButtonBarToGridPane(layoutManager, genTabModel.genElements)
+            appendButtonBarToGridPane(layoutManager, genTabModel.genElements, genTabModel.outputDirectory)
             tab.content = scrollPane
             tabList.add(tab)
         }
         return tabList
     }
 
-    private fun appendButtonBarToGridPane(layoutManager: GridPane, genElements: ArrayList<GenElement>) {
+    private fun appendButtonBarToGridPane(layoutManager: GridPane, genElements: ArrayList<GenElement>, outputDirectory: File) {
         val buttonBar = ButtonBar()
         buttonBar.prefHeight = 15.0
 
-        buttonBar.buttons.add(createOKButton(layoutManager, genElements))
+        buttonBar.buttons.add(createOKButton(layoutManager, genElements, outputDirectory))
         layoutManager.addRow(layoutManager.getRowCount() + 1, buttonBar)
     }
 
-    private fun createOKButton(layoutManager: GridPane, genElements: ArrayList<GenElement>): Button {
+    private fun createOKButton(layoutManager: GridPane, genElements: ArrayList<GenElement>, outputDirectory: File): Button {
         val okButton = Button("OK")
         okButton.onAction = EventHandler {
             val tagsAndValues = getTagsAndValues(layoutManager, genElements)
-            tagsAndValues.forEach { key, value ->  println("$key $value")}
+            tagsAndValues.forEach { key, value -> println("$key $value") }
+            val templateFile = File(tagsAndValues["{template_file}"])
+            if (templateFile.exists()) {
+                replaceTagsInTemplate(templateFile, tagsAndValues, outputDirectory)
+            }
         }
         return okButton
     }
@@ -181,20 +186,35 @@ class RootPaneGen {
                         val selectedIndex = it.selectionModel.selectedIndex
                         if (selectedIndex >= 0) {
                             templateFile = File(genElement.source.plus("/${it.items[selectedIndex]}"))
+                            tagsAndValues.putIfAbsent("{template_file}", templateFile.absolutePath)
                         } else {
-                            openErrorDialog("Error", "No template selected", "Please select a template from the drop down..."); return@forEach
+                            tagsAndValues.putIfAbsent("{template_file}", "no file selected")
                         }
                     } else if (it is TextField && genElement is GenNamedField) {
                         tagsAndValues.put(it.id, it.text)
                     } else if (it is DatePicker && genElement is GenNamedDatePicker) {
-                        //TODO: find out the correct way to get the date with a certain format...
-                        //val dateValue = it.value.toString()
-                        //tagsAndValues.put(it.id, it.value.toString())
+                        if (it.value != null) {
+                            val chronoDate = it.chronology.date(it.value)
+                            tagsAndValues.putIfAbsent(it.id, chronoDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                        } else {
+                            tagsAndValues.putIfAbsent(it.id, "")
+                        }
                     }
                 }
             }
         }
         return tagsAndValues
+    }
+
+    private fun replaceTagsInTemplate(document: File, tagsAndValues: HashMap<String, String>, outputDirectory: File) {
+        if (FileHelper.getFileExt(document) == "docx" || FileHelper.getFileExt(document) == "doc") {
+            val wordDocHelper = WordDocHelper()
+            wordDocHelper.openDocument(document)
+            tagsAndValues.forEach { tag, value -> wordDocHelper.replaceTextInDocument(tag, value) }
+            if (!outputDirectory.exists()) { outputDirectory.mkdir() }
+            wordDocHelper.output(FileOutputStream(File("${outputDirectory.absolutePath}/${document.name}")))
+            wordDocHelper.closeDocument()
+        }
     }
 
     private fun getTemplateList(sourceDir: File): Array<File> {
@@ -228,6 +248,7 @@ class RootPaneGen {
                     "named_field" -> genElements.add(createNamedFieldModel(tabChildNodeData as Element))
                     "named_date_picker" -> genElements.add(createNamedDatePickerModel(tabChildNodeData as Element))
                     "named_list" -> genElements.add(createNamedListModel(tabChildNodeData as Element))
+                    "output_directory" -> genTab.outputDirectory = File(tabData.getAttribute("path"))
                 }
             }
             genTab.genElements = genElements
@@ -257,6 +278,7 @@ class RootPaneGen {
         genNamedList.name = element.getAttribute("name")
         genNamedList.type = element.getAttribute("type")
         genNamedList.source = element.getAttribute("source")
+        genNamedList.tag = element.getAttribute("tag")
         return genNamedList
     }
 }
