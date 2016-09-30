@@ -2,7 +2,7 @@
 	<tab title="Letter">
 		<named_list name="Letter Templates" type="drop down" source="letter_templates"/>
 		<named_field name="Ref #" type="plain_text" tag="{ref}"/>
-		<named_date_picker name="Letter Date" format="dd/mm/yy" tag="{date}"/>
+		<named_date_picker name="Letter Date" format="dd/mm/yy" tag="{letter_date}"/>
 		<named_field name="Title: (Mr/Mrs/Miss)" type="plain_text" tag="{title}"/>
 		<named_field name="Patient Full Name" type="plain_text" tag="{patient_full_name}"/>
 		<named_field name="Patient Abbr. Name" type="plain_text" tag="{patient_abbreviated_name}"/>

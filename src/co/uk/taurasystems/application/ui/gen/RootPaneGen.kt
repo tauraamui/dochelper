@@ -1,6 +1,10 @@
 package co.uk.taurasystems.application.ui.gen
 
+import co.uk.taurasystems.application.getRowCount
+import co.uk.taurasystems.application.ui.openErrorDialog
 import co.uk.taurasystems.application.utils.XMLParser
+import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.Group
 import javafx.scene.Scene
@@ -17,13 +21,33 @@ import java.util.*
  * Created by alewis on 28/09/2016.
  */
 
-interface GenElement
-data class GenTab(var title: String, var genElements: ArrayList<GenElement>): GenElement
-data class GenNamedList(var name: String, var type: String, var source: String): GenElement
-data class GenNamedField(var name: String, var type: String, var tag: String): GenElement
-data class GenNamedDatePicker(var name: String, var format: String, var tag: String): GenElement
+interface GenElement {
+    var tag: String
+}
+
+//data class GenTab(var title: String, var genElements: ArrayList<GenElement>): GenElement
+data class GenNamedList(var name: String, var type: String, var source: String, override var tag: String) : GenElement
+
+data class GenNamedField(var name: String, var type: String, override var tag: String) : GenElement
+data class GenNamedDatePicker(var name: String, var format: String, override var tag: String) : GenElement
+
+class GenTab : GenElement {
+
+    override var tag = ""
+    var title: String = ""
+    var genElements: ArrayList<GenElement> = ArrayList<GenElement>()
+
+    constructor(title: String, genElements: ArrayList<GenElement>) {
+        this.title = title
+        this.genElements = genElements
+    }
+
+    //TODO: Add additional methods, for stuff that I've forgotten... :P
+}
 
 class RootPaneGen {
+
+    var sourceDir = File("")
 
     fun generateRootPane(primaryStage: Stage): Scene {
         val formXML = XMLParser().loadXMLDoc("form.xml")
@@ -35,13 +59,16 @@ class RootPaneGen {
 
                 if (rootElement.nodeName == "root_window") {
                     val tabPane = TabPane()
+                    tabPane.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
                     var scene = Scene(GridPane())
 
                     val windowTitle = rootElement.getAttribute("title")
                     val width = rootElement.getAttribute("width")
                     val height = rootElement.getAttribute("height")
 
-                    if (windowTitle != null) { primaryStage.title = windowTitle}
+                    if (windowTitle != null) {
+                        primaryStage.title = windowTitle
+                    }
 
                     if (width != null && height != null) {
                         scene = Scene(tabPane, width.toDouble(), height.toDouble())
@@ -75,7 +102,9 @@ class RootPaneGen {
         for (genTabModel in genTabModels) {
             val tab = Tab()
             tab.text = genTabModel.title
+            val scrollPane = ScrollPane()
             val layoutManager = GridPane()
+            scrollPane.content = layoutManager
             layoutManager.vgap = 5.0
             layoutManager.hgap = 5.0
             layoutManager.padding = Insets(10.0, 10.0, 10.0, 10.0)
@@ -116,10 +145,51 @@ class RootPaneGen {
                     layoutManager.add(datePicker, 1, i)
                 }
             }
-            tab.content = layoutManager
+            //so meta, but getRowCount is an extension method, check the 'ExtensionMethods.kt' file
+            println(layoutManager.getRowCount())
+            appendButtonBarToGridPane(layoutManager, genTabModel.genElements)
+            tab.content = scrollPane
             tabList.add(tab)
         }
         return tabList
+    }
+
+    private fun appendButtonBarToGridPane(layoutManager: GridPane, genElements: ArrayList<GenElement>) {
+        val buttonBar = ButtonBar()
+        buttonBar.prefHeight = 15.0
+
+        buttonBar.buttons.add(createOKButton(layoutManager, genElements))
+        layoutManager.addRow(layoutManager.getRowCount() + 1, buttonBar)
+    }
+
+    private fun createOKButton(layoutManager: GridPane, genElements: ArrayList<GenElement>): Button {
+        val okButton = Button("OK")
+        okButton.onAction = EventHandler {
+            val tagsAndValues = HashMap<String, String>()
+            var templateFile = File("")
+            for (genElement in genElements) {
+                layoutManager.children.forEach {
+                    if (it.id == genElement.tag) {
+                        if (it is ComboBox<*> && genElement is GenNamedList) {
+                            val selectedIndex = it.selectionModel.selectedIndex
+                            if (selectedIndex >= 0) {
+                                templateFile = File(genElement.source.plus("/${it.items[selectedIndex]}"))
+                            } else {
+                                openErrorDialog("Error", "No template selected", "Please select a template from the drop down..."); return@EventHandler
+                            }
+                        } else if (it is TextField && genElement is GenNamedField) {
+                            tagsAndValues.put(it.id, it.text)
+                        } else if (it is DatePicker && genElement is GenNamedDatePicker) {
+                            //TODO: find out the correct way to get the date with a certain format...
+                            //val dateValue = it.value.toString()
+                            //tagsAndValues.put(it.id, it.value.toString())
+                        }
+                    }
+                }
+            }
+            tagsAndValues.forEach { key, value ->  println("$key $value")}
+        }
+        return okButton
     }
 
     private fun getTemplateList(sourceDir: File): Array<File> {
@@ -140,14 +210,14 @@ class RootPaneGen {
 
         val tabs = document.getElementsByTagName("tab")
 
-        for (i in 0..tabs.length-1) {
+        for (i in 0..tabs.length - 1) {
             val tabData = tabs.item(i) as Element
 
             val genTab = GenTab("", ArrayList())
             genTab.title = tabData.getAttribute("title")
 
             val genElements = ArrayList<GenElement>()
-            for (j in 0..tabData.childNodes.length-1) {
+            for (j in 0..tabData.childNodes.length - 1) {
                 val tabChildNodeData = tabData.childNodes.item(j)
                 when (tabChildNodeData.nodeName) {
                     "named_field" -> genElements.add(createNamedFieldModel(tabChildNodeData as Element))
@@ -178,7 +248,7 @@ class RootPaneGen {
     }
 
     private fun createNamedListModel(element: Element): GenNamedList {
-        val genNamedList = GenNamedList("", "", "")
+        val genNamedList = GenNamedList("", "", "", "")
         genNamedList.name = element.getAttribute("name")
         genNamedList.type = element.getAttribute("type")
         genNamedList.source = element.getAttribute("source")

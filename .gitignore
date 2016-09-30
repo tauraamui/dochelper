@@ -1,5 +1,6 @@
 out/
 oxh_docs/
+letter_templates/
 *.class
 
 # Mobile Tools for Java (J2ME)
