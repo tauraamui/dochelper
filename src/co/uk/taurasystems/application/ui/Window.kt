@@ -11,13 +11,6 @@ import javafx.stage.Stage
 class Window : Application() {
 
     override fun start(primaryStage: Stage) {
-        /*
-        //val loader = FXMLLoader(LetterPaneController::class.java.getResource("LetterPane.fxml"))
-        val loader = FXMLLoader(RootPaneController::class.java.getResource("/co/uk/taurasystems/application/ui/panes/views/RootPane.fxml"))
-        primaryStage.scene = Scene(loader.load())
-        primaryStage.show()
-        */
-
         val rootPaneGen = RootPaneGen()
         primaryStage.scene = rootPaneGen.generateRootPane(primaryStage)
         primaryStage.show()
