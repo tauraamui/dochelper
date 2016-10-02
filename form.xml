@@ -13,7 +13,7 @@
 		<named_field name="Post Code" type="plain_text" tag="{post_code}"/>
 		<named_date_picker name="Appointment Date" format="dd/MM/yyyy" tag="{appointment_date}"/>
 		<named_field name="Appointment Time" type="plain_text" tag="{appointment_time}"/>
-		<output_directory path="Letters"/>
+		<output_directory path="Completed Letters" suffix1="{patient_abbreviated_name}"/>
 	</tab>
 	<tab title="Test tab 1">
 		<named_field name="Test field"/>

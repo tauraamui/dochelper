@@ -44,6 +44,7 @@ class GenTab : GenElement {
     var title: String = ""
     var genElements: ArrayList<GenElement> = ArrayList<GenElement>()
     var outputDirectory: File = File("")
+    var outputFilePrefixes = ArrayList<String>()
 
     constructor(title: String, genElements: ArrayList<GenElement>) {
         this.title = title
@@ -147,30 +148,36 @@ class RootPaneGen {
                     layoutManager.add(datePicker, 1, i)
                 }
             }
-            //so meta, but getRowCount is an extension method, check the 'ExtensionMethods.kt' file
-            appendButtonBarToGridPane(layoutManager, genTabModel.genElements, genTabModel.outputDirectory)
+
+            appendButtonBarToGridPane(layoutManager, genTabModel.genElements, genTabModel.outputFilePrefixes, genTabModel.outputDirectory)
             tab.content = scrollPane
             tabList.add(tab)
         }
         return tabList
     }
 
-    private fun appendButtonBarToGridPane(layoutManager: GridPane, genElements: ArrayList<GenElement>, outputDirectory: File) {
+    private fun appendButtonBarToGridPane(layoutManager: GridPane, genElements: ArrayList<GenElement>, outputFileNamePrefixTags: ArrayList<String>, outputDirectory: File) {
         val buttonBar = ButtonBar()
         buttonBar.prefHeight = 15.0
 
-        buttonBar.buttons.add(createOKButton(layoutManager, genElements, outputDirectory))
+        buttonBar.buttons.add(createOKButton(layoutManager, genElements, outputFileNamePrefixTags, outputDirectory))
         layoutManager.addRow(layoutManager.getRowCount() + 1, buttonBar)
     }
 
-    private fun createOKButton(layoutManager: GridPane, genElements: ArrayList<GenElement>, outputDirectory: File): Button {
+    private fun createOKButton(layoutManager: GridPane, genElements: ArrayList<GenElement>, outputFileNamePrefixTags: ArrayList<String>, outputDirectory: File): Button {
         val okButton = Button("OK")
         okButton.onAction = EventHandler {
             val tagsAndValues = getTagsAndValues(layoutManager, genElements)
+            val outputFileNamePrefixTagValues = ArrayList<String>()
             tagsAndValues.forEach { key, value -> println("$key $value") }
+            for (prefixTag in outputFileNamePrefixTags) {
+                tagsAndValues.forEach { key, value ->
+                    if (key == prefixTag) { outputFileNamePrefixTagValues.add(value) }
+                }
+            }
             val templateFile = File(tagsAndValues["{template_file}"])
             if (templateFile.exists()) {
-                replaceTagsInTemplate(templateFile, tagsAndValues, outputDirectory)
+                replaceTagsInTemplate(templateFile, tagsAndValues, outputFileNamePrefixTagValues, outputDirectory)
             }
         }
         return okButton
@@ -195,7 +202,7 @@ class RootPaneGen {
                     } else if (it is DatePicker && genElement is GenNamedDatePicker) {
                         if (it.value != null) {
                             val chronoDate = it.chronology.date(it.value)
-                            tagsAndValues.putIfAbsent(it.id, chronoDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            tagsAndValues.putIfAbsent(it.id, chronoDate.format(DateTimeFormatter.ofPattern(genElement.format)))
                         } else {
                             tagsAndValues.putIfAbsent(it.id, "")
                         }
@@ -206,13 +213,19 @@ class RootPaneGen {
         return tagsAndValues
     }
 
-    private fun replaceTagsInTemplate(document: File, tagsAndValues: HashMap<String, String>, outputDirectory: File) {
+    private fun replaceTagsInTemplate(document: File, tagsAndValues: HashMap<String, String>, fileNamePrefixes: ArrayList<String>, outputDirectory: File) {
         if (FileHelper.getFileExt(document) == "docx" || FileHelper.getFileExt(document) == "doc") {
             val wordDocHelper = WordDocHelper()
             wordDocHelper.openDocument(document)
             tagsAndValues.forEach { tag, value -> wordDocHelper.replaceTextInDocument(tag, value) }
             if (!outputDirectory.exists()) { outputDirectory.mkdir() }
-            wordDocHelper.output(FileOutputStream(File("${outputDirectory.absolutePath}/${document.name}")))
+            //val outputFileName = "${outputDirectory.absolutePath}/${document.name}"
+            val documentName = "${document.name}"
+            var documentNameWithPrefixes = ""
+            for (prefix in fileNamePrefixes) { documentNameWithPrefixes += "$prefix "}
+            documentNameWithPrefixes += documentName
+            val outputFilePath = "${outputDirectory.absolutePath}/${documentNameWithPrefixes}"
+            wordDocHelper.output(FileOutputStream(FileHelper.getUniqueFileName(File(outputFilePath))))
             wordDocHelper.closeDocument()
         }
     }
@@ -248,7 +261,15 @@ class RootPaneGen {
                     "named_field" -> genElements.add(createNamedFieldModel(tabChildNodeData as Element))
                     "named_date_picker" -> genElements.add(createNamedDatePickerModel(tabChildNodeData as Element))
                     "named_list" -> genElements.add(createNamedListModel(tabChildNodeData as Element))
-                    "output_directory" -> genTab.outputDirectory = File(tabData.getAttribute("path"))
+                    "output_directory" -> {
+                        val outputDirectoryElement = (tabChildNodeData as Element)
+                        genTab.outputDirectory = File(outputDirectoryElement.getAttribute("path"))
+                        val prefixes = ArrayList<String>()
+                        for (i in 0..outputDirectoryElement.attributes.length) {
+                            prefixes.add(outputDirectoryElement.getAttribute("suffix$i"))
+                        }
+                        genTab.outputFilePrefixes = prefixes
+                    }
                 }
             }
             genTab.genElements = genElements
