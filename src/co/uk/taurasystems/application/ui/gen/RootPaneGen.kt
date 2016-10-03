@@ -32,11 +32,24 @@ interface GenElement {
     var tag: String
 }
 
+interface GenElementLink {
+    var sourceTabID: Int
+    var sourceID: Int
+    var destinationTabID: Int
+    var destinationID: Int
+}
+
 //data class GenTab(var title: String, var genElements: ArrayList<GenElement>): GenElement
 data class GenNamedList(var name: String, var type: String, var source: String, override var tag: String) : GenElement
-
 data class GenNamedField(var name: String, var type: String, override var tag: String) : GenElement
 data class GenNamedDatePicker(var name: String, var format: String, override var tag: String) : GenElement
+
+class GenLink : GenElementLink {
+    override var sourceTabID: Int = -1
+    override var sourceID: Int = -1
+    override var destinationTabID: Int = -1
+    override var destinationID: Int = -1
+}
 
 class GenTab : GenElement {
 
@@ -84,6 +97,9 @@ class RootPaneGen {
                     }
 
                     val genTabModels = generateTabsModels(formXML)
+                    val links = generateLinkModels(formXML)
+
+                    for (link in links) { println("Source ID: ${link.sourceID} Destination ID: ${link.destinationID}") }
 
                     generateTabsFromModels(genTabModels).forEach { tabPane.tabs.add(it) }
 
@@ -219,7 +235,6 @@ class RootPaneGen {
             wordDocHelper.openDocument(document)
             tagsAndValues.forEach { tag, value -> wordDocHelper.replaceTextInDocument(tag, value) }
             if (!outputDirectory.exists()) { outputDirectory.mkdir() }
-            //val outputFileName = "${outputDirectory.absolutePath}/${document.name}"
             val documentName = "${document.name}"
             var documentNameWithPrefixes = ""
             for (prefix in fileNamePrefixes) { documentNameWithPrefixes += "$prefix "}
@@ -276,6 +291,25 @@ class RootPaneGen {
             genTabs.add(genTab)
         }
         return genTabs
+    }
+
+    private fun generateLinkModels(document: Document): ArrayList<GenLink> {
+        val genLinks = ArrayList<GenLink>()
+        val links = document.getElementsByTagName("links")
+
+        for (i in 0..links.length-1) {
+            val linkData = links.item(i) as Element
+
+            val genLink = GenLink()
+            if (linkData.nodeName == "link") {
+                genLink.sourceTabID = linkData.getAttribute("source_tab_id").toInt()
+                genLink.sourceID = linkData.getAttribute("source_id").toInt()
+                genLink.destinationTabID = linkData.getAttribute("destination_tab_id").toInt()
+                genLink.destinationID = linkData.getAttribute("destination_id").toInt()
+            }
+            genLinks.add(genLink)
+        }
+        return genLinks
     }
 
     private fun createNamedFieldModel(element: Element): GenNamedField {
