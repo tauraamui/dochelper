@@ -1,7 +1,7 @@
 <root_window title="Dochelper" width="800" height="600">
-	<tab title="Letter">
+	<tab id="0" title="Letter">
 		<named_list name="Letter Templates" type="drop down" source="letter_templates" tag="{letter_templates}"/>
-		<named_field name="Ref #" type="plain_text" tag="{ref}"/>
+		<named_field id="0" name="Ref #" type="plain_text" tag="{ref}"/>
 		<named_date_picker name="Letter Date" format="dd/MM/yyyy" tag="{letter_date}"/>
 		<named_field name="Title: (Mr/Mrs/Miss)" type="plain_text" tag="{title}"/>
 		<named_field name="Patient Full Name" type="plain_text" tag="{patient_full_name}"/>
@@ -15,8 +15,17 @@
 		<named_field name="Appointment Time" type="plain_text" tag="{appointment_time}"/>
 		<output_directory path="Completed Letters" suffix1="{patient_abbreviated_name}"/>
 	</tab>
-	<tab title="Test tab 1">
-		<named_field name="Test field"/>
+	<tab title="Invoice">
+		<named_list name="Invoice Templates" type="drop down" source="invoice_templates" tag="{invoice_templates}"/>
+		<named_field name="Ref #" type="plain_text" tag="{ref}"/>
+		<named_field name="Title: (Mr/Mrs/Miss)" type="plain_text" tag="{title}"/>
+		<named_field name="Patient Full Name" type="plain_text" tag="{patient_full_name}"/>
+		<named_field name="Patient Abbr. Name" type="plain_text" tag="{patient_abbreviated_name}"/>
+		<named_field name="Address Line 1" type="plain_text" tag="{address_line_1}"/>
+		<named_field name="Address Line 2" type="plain_text" tag="{address_line_2}"/>
+		<named_field name="Address Line 3" type="plain_text" tag="{address_line_3}"/>
+		<named_field name="Address Line 4" type="plain_text" tag="{address_line_4}"/>
+		<named_field name="Post Code" type="plain_text" tag="{post_code}"/>
 	</tab>
 
 	<links>

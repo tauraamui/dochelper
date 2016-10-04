@@ -11,6 +11,7 @@ import javafx.geometry.Insets
 import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.GridPane
 import javafx.stage.Stage
 import javafx.util.StringConverter
@@ -80,6 +81,7 @@ class RootPaneGen {
                 if (rootElement.nodeName == "root_window") {
                     val tabPane = TabPane()
                     tabPane.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+                    //setting scene to something arbitary because I don't want it to be null
                     var scene = Scene(GridPane())
 
                     val windowTitle = rootElement.getAttribute("title")
@@ -101,7 +103,7 @@ class RootPaneGen {
 
                     for (link in links) { println("Source ID: ${link.sourceID} Destination ID: ${link.destinationID}") }
 
-                    generateTabsFromModels(genTabModels).forEach { tabPane.tabs.add(it) }
+                    generateTabsFromModels(genTabModels, links).forEach { tabPane.tabs.add(it) }
 
                     return scene
                 } else {
@@ -115,14 +117,16 @@ class RootPaneGen {
         }
     }
 
-    private fun generateTabsFromModels(genTabModels: ArrayList<GenTab>): ArrayList<Tab> {
+    private fun generateTabsFromModels(genTabModels: ArrayList<GenTab>, links: ArrayList<GenLink>): ArrayList<Tab> {
         val tabList = ArrayList<Tab>()
         for (genTabModel in genTabModels) {
             val tab = Tab()
             tab.text = genTabModel.title
             val scrollPane = ScrollPane()
             val layoutManager = GridPane()
+            val anchorPane = AnchorPane()
             scrollPane.content = layoutManager
+            anchorPane.children.add(scrollPane)
             layoutManager.vgap = 5.0
             layoutManager.hgap = 5.0
             layoutManager.padding = Insets(10.0, 10.0, 10.0, 10.0)
@@ -166,7 +170,7 @@ class RootPaneGen {
             }
 
             appendButtonBarToGridPane(layoutManager, genTabModel.genElements, genTabModel.outputFilePrefixes, genTabModel.outputDirectory)
-            tab.content = scrollPane
+            tab.content = anchorPane
             tabList.add(tab)
         }
         return tabList
