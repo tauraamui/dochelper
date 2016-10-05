@@ -30,6 +30,7 @@ import java.util.*
  */
 
 interface GenElement {
+    var id: Int
     var tag: String
 }
 
@@ -41,9 +42,9 @@ interface GenElementLink {
 }
 
 //data class GenTab(var title: String, var genElements: ArrayList<GenElement>): GenElement
-data class GenNamedList(var name: String, var type: String, var source: String, override var tag: String) : GenElement
-data class GenNamedField(var name: String, var type: String, override var tag: String) : GenElement
-data class GenNamedDatePicker(var name: String, var format: String, override var tag: String) : GenElement
+data class GenNamedList(override var id: Int, var name: String, var type: String, var source: String, override var tag: String) : GenElement
+data class GenNamedField(override var id: Int, var name: String, var type: String, override var tag: String) : GenElement
+data class GenNamedDatePicker(override var id: Int, var name: String, var format: String, override var tag: String) : GenElement
 
 class GenLink : GenElementLink {
     override var sourceTabID: Int = -1
@@ -55,7 +56,7 @@ class GenLink : GenElementLink {
 class GenTab : GenElement {
 
     override var tag = ""
-    var id: Int = -1
+    override var id: Int = -1
     var title: String = ""
     var genElements: ArrayList<GenElement> = ArrayList<GenElement>()
     var outputDirectory: File = File("")
@@ -107,13 +108,21 @@ class RootPaneGen {
                     for (link in links) {
                         var sourceTab = Tab()
                         var destinationTab = Tab()
-                        for (tab in tabPane.tabs) {
-                            println("${tab.id} ${link.sourceTabID}")
-                            if (tab.id.toInt() == link.sourceTabID) { sourceTab = tab }
-                            if (tab.id.toInt() == link.destinationTabID) { destinationTab = tab }
-                            println("${sourceTab.text} ${destinationTab.text}")
+
+                        tabPane.tabs.forEach {
+                            if (it.id.toInt() == link.sourceTabID) { sourceTab = it }
+                            if (it.id.toInt() == link.destinationTabID) { destinationTab = it }
                         }
 
+                        if (sourceTab.id != null && destinationTab.id != null) {
+                            for (genTabModel in genTabModels) {
+                                genTabModel.genElements.forEach {
+                                    if (it.id == link.sourceID)
+                                    println("Element ID: ${it.id}, Source ID: ${link.sourceID} ${(it.id == link.sourceID)}")
+                                }
+                            }
+                            genTabModels.filter { it.id == link.sourceID }.forEach { println(it.genElements) }
+                        }
                     }
 
                     for (tab in tabPane.tabs) {
@@ -277,7 +286,8 @@ class RootPaneGen {
                 throw Exception("Source must be a directory")
             }
         } else {
-            throw Exception("Source directory ${sourceDir.name} does not exist...")
+            sourceDir.mkdir()
+            return getTemplateList(sourceDir)
         }
     }
 
@@ -343,7 +353,8 @@ class RootPaneGen {
     }
 
     private fun createNamedFieldModel(element: Element): GenNamedField {
-        val genNamedField = GenNamedField("", "", "")
+        val genNamedField = GenNamedField(-1, "", "", "")
+        try { genNamedField.id = element.getAttribute("id").toInt() } catch (e: NumberFormatException) {}
         genNamedField.name = element.getAttribute("name")
         genNamedField.type = element.getAttribute("type")
         genNamedField.tag = element.getAttribute("tag")
@@ -351,7 +362,8 @@ class RootPaneGen {
     }
 
     private fun createNamedDatePickerModel(element: Element): GenNamedDatePicker {
-        val genNamedDatePicker = GenNamedDatePicker("", "", "")
+        val genNamedDatePicker = GenNamedDatePicker(-1, "", "", "")
+        try { genNamedDatePicker.id = element.getAttribute("id").toInt() } catch (e: NumberFormatException) {}
         genNamedDatePicker.name = element.getAttribute("name")
         genNamedDatePicker.format = element.getAttribute("format")
         genNamedDatePicker.tag = element.getAttribute("tag")
@@ -359,7 +371,8 @@ class RootPaneGen {
     }
 
     private fun createNamedListModel(element: Element): GenNamedList {
-        val genNamedList = GenNamedList("", "", "", "")
+        val genNamedList = GenNamedList(-1, "", "", "", "")
+        try { genNamedList.id = element.getAttribute("id").toInt() } catch (e: NumberFormatException) {}
         genNamedList.name = element.getAttribute("name")
         genNamedList.type = element.getAttribute("type")
         genNamedList.source = element.getAttribute("source")

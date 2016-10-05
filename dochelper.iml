@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/letter_templates" />
       <excludeFolder url="file://$MODULE_DIR$/oxh_docs" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="poi-3.14-20160307" level="project" />
