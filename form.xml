@@ -15,9 +15,9 @@
 		<named_field name="Appointment Time" type="plain_text" tag="{appointment_time}"/>
 		<output_directory path="Completed Letters" suffix1="{patient_abbreviated_name}"/>
 	</tab>
-	<tab title="Invoice">
+	<tab id="1" title="Invoice">
 		<named_list name="Invoice Templates" type="drop down" source="invoice_templates" tag="{invoice_templates}"/>
-		<named_field name="Ref #" type="plain_text" tag="{ref}"/>
+		<named_field id="0" name="Ref #" type="plain_text" tag="{ref}"/>
 		<named_field name="Title: (Mr/Mrs/Miss)" type="plain_text" tag="{title}"/>
 		<named_field name="Patient Full Name" type="plain_text" tag="{patient_full_name}"/>
 		<named_field name="Patient Abbr. Name" type="plain_text" tag="{patient_abbreviated_name}"/>
@@ -28,7 +28,5 @@
 		<named_field name="Post Code" type="plain_text" tag="{post_code}"/>
 	</tab>
 
-	<links>
-		<link source_tab_id="0" source_id="1" destination_tab_id="1" destination_id="1"/>
-	</links>
+	<link source_tab_id="0" source_id="0" destination_tab_id="1" destination_id="0"/>
 </root_window>

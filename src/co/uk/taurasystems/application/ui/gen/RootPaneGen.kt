@@ -55,6 +55,7 @@ class GenLink : GenElementLink {
 class GenTab : GenElement {
 
     override var tag = ""
+    var id: Int = -1
     var title: String = ""
     var genElements: ArrayList<GenElement> = ArrayList<GenElement>()
     var outputDirectory: File = File("")
@@ -101,9 +102,29 @@ class RootPaneGen {
                     val genTabModels = generateTabsModels(formXML)
                     val links = generateLinkModels(formXML)
 
-                    for (link in links) { println("Source ID: ${link.sourceID} Destination ID: ${link.destinationID}") }
-
                     generateTabsFromModels(genTabModels, links).forEach { tabPane.tabs.add(it) }
+
+                    for (link in links) {
+                        var sourceTab = Tab()
+                        var destinationTab = Tab()
+                        for (tab in tabPane.tabs) {
+                            println("${tab.id} ${link.sourceTabID}")
+                            if (tab.id.toInt() == link.sourceTabID) { sourceTab = tab }
+                            if (tab.id.toInt() == link.destinationTabID) { destinationTab = tab }
+                            println("${sourceTab.text} ${destinationTab.text}")
+                        }
+
+                    }
+
+                    for (tab in tabPane.tabs) {
+                        if (tab.content is ScrollPane) {
+                            val scrollPane = tab.content as ScrollPane
+                            if (scrollPane.content is GridPane) {
+                                val gridPane = scrollPane.content as GridPane
+                                //gridPane.children.forEach { println(it.id) }
+                            }
+                        }
+                    }
 
                     return scene
                 } else {
@@ -121,12 +142,11 @@ class RootPaneGen {
         val tabList = ArrayList<Tab>()
         for (genTabModel in genTabModels) {
             val tab = Tab()
+            tab.id = genTabModel.id.toString()
             tab.text = genTabModel.title
             val scrollPane = ScrollPane()
             val layoutManager = GridPane()
-            val anchorPane = AnchorPane()
             scrollPane.content = layoutManager
-            anchorPane.children.add(scrollPane)
             layoutManager.vgap = 5.0
             layoutManager.hgap = 5.0
             layoutManager.padding = Insets(10.0, 10.0, 10.0, 10.0)
@@ -170,7 +190,7 @@ class RootPaneGen {
             }
 
             appendButtonBarToGridPane(layoutManager, genTabModel.genElements, genTabModel.outputFilePrefixes, genTabModel.outputDirectory)
-            tab.content = anchorPane
+            tab.content = scrollPane
             tabList.add(tab)
         }
         return tabList
@@ -189,7 +209,7 @@ class RootPaneGen {
         okButton.onAction = EventHandler {
             val tagsAndValues = getTagsAndValues(layoutManager, genElements)
             val outputFileNamePrefixTagValues = ArrayList<String>()
-            tagsAndValues.forEach { key, value -> println("$key $value") }
+            //tagsAndValues.forEach { key, value -> println("$key $value") }
             for (prefixTag in outputFileNamePrefixTags) {
                 tagsAndValues.forEach { key, value ->
                     if (key == prefixTag) { outputFileNamePrefixTagValues.add(value) }
@@ -270,36 +290,42 @@ class RootPaneGen {
         for (i in 0..tabs.length - 1) {
             val tabData = tabs.item(i) as Element
 
-            val genTab = GenTab("", ArrayList())
-            genTab.title = tabData.getAttribute("title")
+            if (tabData.nodeName == "tab") {
+                val genTab = GenTab("", ArrayList())
+                try {
+                    genTab.id = tabData.getAttribute("id").toInt()
+                } catch (e: NumberFormatException) {}
+                genTab.title = tabData.getAttribute("title")
 
-            val genElements = ArrayList<GenElement>()
-            for (j in 0..tabData.childNodes.length - 1) {
-                val tabChildNodeData = tabData.childNodes.item(j)
-                when (tabChildNodeData.nodeName) {
-                    "named_field" -> genElements.add(createNamedFieldModel(tabChildNodeData as Element))
-                    "named_date_picker" -> genElements.add(createNamedDatePickerModel(tabChildNodeData as Element))
-                    "named_list" -> genElements.add(createNamedListModel(tabChildNodeData as Element))
-                    "output_directory" -> {
-                        val outputDirectoryElement = (tabChildNodeData as Element)
-                        genTab.outputDirectory = File(outputDirectoryElement.getAttribute("path"))
-                        val prefixes = ArrayList<String>()
-                        for (i in 0..outputDirectoryElement.attributes.length) {
-                            prefixes.add(outputDirectoryElement.getAttribute("suffix$i"))
+                val genElements = ArrayList<GenElement>()
+                for (j in 0..tabData.childNodes.length - 1) {
+                    val tabChildNodeData = tabData.childNodes.item(j)
+                    when (tabChildNodeData.nodeName) {
+                        "named_field" -> genElements.add(createNamedFieldModel(tabChildNodeData as Element))
+                        "named_date_picker" -> genElements.add(createNamedDatePickerModel(tabChildNodeData as Element))
+                        "named_list" -> genElements.add(createNamedListModel(tabChildNodeData as Element))
+                        "output_directory" -> {
+                            val outputDirectoryElement = (tabChildNodeData as Element)
+                            genTab.outputDirectory = File(outputDirectoryElement.getAttribute("path"))
+                            val prefixes = ArrayList<String>()
+                            for (i in 0..outputDirectoryElement.attributes.length) {
+                                prefixes.add(outputDirectoryElement.getAttribute("suffix$i"))
+                            }
+                            genTab.outputFilePrefixes = prefixes
                         }
-                        genTab.outputFilePrefixes = prefixes
                     }
                 }
+                genTab.genElements = genElements
+                genTabs.add(genTab)
             }
-            genTab.genElements = genElements
-            genTabs.add(genTab)
+
         }
         return genTabs
     }
 
     private fun generateLinkModels(document: Document): ArrayList<GenLink> {
         val genLinks = ArrayList<GenLink>()
-        val links = document.getElementsByTagName("links")
+        val links = document.getElementsByTagName("link")
 
         for (i in 0..links.length-1) {
             val linkData = links.item(i) as Element
