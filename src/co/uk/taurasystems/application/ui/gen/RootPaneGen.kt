@@ -108,7 +108,7 @@ class RootPaneGen {
 
                     generateTabsFromModels(genTabModels, links).forEach { tabPane.tabs.add(it) }
 
-                    linkTabs(genTabModels, links, tabPane)
+                    linkTabElements(genTabModels, links, tabPane)
 
                     return scene
                 } else {
@@ -122,7 +122,7 @@ class RootPaneGen {
         }
     }
 
-    private fun linkTabs(genTabModels: ArrayList<GenTab>, links: ArrayList<GenLink>, tabPane: TabPane) {
+    private fun linkTabElements(genTabModels: ArrayList<GenTab>, links: ArrayList<GenLink>, tabPane: TabPane) {
 
         for (link in links) {
 
