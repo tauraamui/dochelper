@@ -5,8 +5,11 @@ import co.uk.taurasystems.application.ui.openErrorDialog
 import co.uk.taurasystems.application.utils.FileHelper
 import co.uk.taurasystems.application.utils.WordDocHelper
 import co.uk.taurasystems.application.utils.XMLParser
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.event.EventType
 import javafx.geometry.Insets
 import javafx.scene.Group
 import javafx.scene.Scene
@@ -106,8 +109,15 @@ class RootPaneGen {
                     generateTabsFromModels(genTabModels, links).forEach { tabPane.tabs.add(it) }
 
                     for (link in links) {
+
                         var sourceTab = Tab()
                         var destinationTab = Tab()
+
+                        var sourceElement: GenElement? = null
+                        var destinationElement: GenElement? = null
+
+                        var sourceUIElement: Control? = null
+                        var destinationUIElement: Control? = null
 
                         tabPane.tabs.forEach {
                             if (it.id.toInt() == link.sourceTabID) { sourceTab = it }
@@ -115,23 +125,47 @@ class RootPaneGen {
                         }
 
                         if (sourceTab.id != null && destinationTab.id != null) {
-                            for (genTabModel in genTabModels) {
-                                genTabModel.genElements.forEach {
-                                    if (it.id == link.sourceID)
-                                    println("Element ID: ${it.id}, Source ID: ${link.sourceID} ${(it.id == link.sourceID)}")
+                            genTabModels.forEach { genTabModel ->
+                                if (genTabModel.id == sourceTab.id.toInt()) {
+                                    genTabModel.genElements.forEach { currentElement -> if (currentElement.id == link.sourceID) { sourceElement = currentElement } }
+                                } else if (genTabModel.id == destinationTab.id.toInt()) {
+                                    genTabModel.genElements.forEach { currentElement -> if (currentElement.id == link.destinationID) { destinationElement = currentElement } }
                                 }
                             }
-                            genTabModels.filter { it.id == link.sourceID }.forEach { println(it.genElements) }
                         }
-                    }
 
-                    for (tab in tabPane.tabs) {
-                        if (tab.content is ScrollPane) {
-                            val scrollPane = tab.content as ScrollPane
+                        if (sourceTab.content is ScrollPane) {
+                            val scrollPane = sourceTab.content as ScrollPane
                             if (scrollPane.content is GridPane) {
                                 val gridPane = scrollPane.content as GridPane
-                                //gridPane.children.forEach { println(it.id) }
+                                gridPane.children.forEach { uiElement ->
+                                    if (uiElement.id == sourceElement?.tag) {
+                                        sourceUIElement = uiElement as Control
+                                    }
+                                }
                             }
+                        }
+
+                        if (destinationTab.content is ScrollPane) {
+                            val scrollPane = destinationTab.content as ScrollPane
+                            if (scrollPane.content is GridPane) {
+                                val gridPane = scrollPane.content as GridPane
+                                gridPane.children.forEach { uiElement ->
+                                    if (uiElement.id == destinationElement?.tag) {
+                                        destinationUIElement = uiElement as Control
+                                    }
+                                }
+                            }
+                        }
+
+                        if (sourceUIElement is TextField && destinationUIElement is TextField) {
+                            (sourceUIElement as TextField).textProperty().addListener(ChangeListener { observableValue, oldValue, newValue ->
+                                (destinationUIElement as TextField).text = (sourceUIElement as TextField).text
+                            })
+                        } else if (sourceUIElement is DatePicker && destinationUIElement is DatePicker) {
+                            (sourceUIElement as DatePicker).valueProperty().addListener( ChangeListener { observableValue, oldValue, newValue ->
+                                (destinationUIElement as DatePicker).value = (sourceUIElement as DatePicker).value
+                            })
                         }
                     }
 
