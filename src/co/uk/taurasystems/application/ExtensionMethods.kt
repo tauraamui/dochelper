@@ -1,6 +1,7 @@
 package co.uk.taurasystems.application
 
 import javafx.scene.layout.GridPane
+import java.time.LocalDate
 
 /**
  * Created by alewis on 30/09/2016.
@@ -18,8 +19,4 @@ fun GridPane.getRowCount(): Int {
         }
     }
     return numRows
-}
-
-fun GridPane.getChildren() {
-
 }
